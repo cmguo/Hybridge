@@ -1,10 +1,15 @@
 #ifndef VALUE_H
 #define VALUE_H
 
+#include "Hybridge_global.h"
+
+#pragma warning( disable: 4251)
+
 #include <string>
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <type_traits>
 
 #include <assert.h>
 
@@ -35,6 +40,9 @@ public:
 
     template<typename T>
     ValueRef ref() const { assert(is<T>()); ValueRef r; r.v_ = v_; r.d_ = &reference<T>; return r; }
+
+    template<typename T>
+    static ValueRef ref(T & t) { ValueRef r; r.v_ = &t; r.d_ = &reference<T>; return r; }
 
 public:
     void swap(ValueRef & o)
@@ -69,58 +77,75 @@ private:
 typedef std::map<std::string, Value> Map;
 typedef std::vector<Value> Array;
 
-class Value
+class HYBRIDGE_EXPORT Value
 {
 public:
     Value() {}
 
     Value(Value const & o) = delete;
 
-    Value(Value && o) : r_(std::move(o.r_)) {}
+    Value(Value && o) : v_(std::move(o.v_)) {}
 
     Value& operator=(Value const & o) = delete;
 
-    Value& operator=(Value && o) { r_ = std::move(o.r_); return *this; }
+    Value& operator=(Value && o) { v_ = std::move(o.v_); return *this; }
 
     template<typename T>
-    Value ref() const { Value v; v.r_ = r_.ref<T>(); return v; }
+    Value ref() const { Value v; v.v_ = v_.ref<T>(); return v; }
+
+    template<typename T>
+    static Value ref(T & t) { Value v; v.v_ = ValueRef::ref(t); return v; }
 
 public:
-    Value(bool b) : r_(std::move(b)) {}
-    bool toBool(bool dft = false) const { return r_.as(dft); }
+    Value(bool b) : v_(std::move(b)) {}
+    bool isBool() const { return v_.is<bool>(); }
+    bool toBool(bool dft = false) const { return v_.as(dft); }
 
-    Value(int n) : Value(static_cast<long int>(n)) {}
-    Value(long int n) : r_(std::move(n)) {}
-    long int toInt(long int dft = 0) const { return r_.as(dft); }
+    Value(int n) : v_(std::move(n)) {}
+    bool isInt() const { return v_.is<int>(); }
+    int toInt(int dft = 0) const { return v_.as(dft); }
 
-    Value(double d) : r_(std::move(d)) {}
-    double toDouble(double dft = 0) const { return r_.as(dft); }
+    Value(long long n) : v_(std::move(n)) {}
+    bool isLong() const { return v_.is<long long>(); }
+    long long toLong(long long dft = 0) const { return v_.as(dft); }
 
-    Value(std::string const & s) : r_(s) {}
-    std::string const & toString(std::string const &dft = std::string()) const { return r_.as(dft); }
+    Value(double d) : v_(std::move(d)) {}
+    bool isDouble() const { return v_.is<double>(); }
+    double toDouble(double dft = 0) const { return v_.as(dft); }
 
-    Value(std::string && s) : r_(std::move(s)) {}
-    std::string & toString(std::string & dft) const { return r_.as(dft); }
+    Value(std::string const & s) : v_(s) {}
+    bool isString() const { return v_.is<std::string>(); }
+    std::string const & toString(std::string const &dft = std::string()) const { return v_.as(dft); }
+
+    Value(std::string && s) : v_(std::move(s)) {}
+    std::string & toString(std::string & dft) const { return v_.as(dft); }
 
 //    MsgValue(MsgMap const & m) : r_(m) {}
-    Map const & toMap(Map const & dft = dftMap) const { return r_.as(dft); }
+    bool isMap() const { return v_.is<Map>(); }
+    Map const & toMap(Map const & dft = dftMap) const { return v_.as(dft); }
 
-    Value(Map && m) : r_(std::move(m)) {}
-    Map & toMap(Map & dft) const { return r_.as(dft); }
+    Value(Map && m) : v_(std::move(m)) {}
+    Map & toMap(Map & dft) const { return v_.as(dft); }
 
 //    MsgValue(MsgArray const & a) : r_(a) {}
-    Array const & toArray(Array const & dft = dftArray) const { return r_.as(dft); }
+    bool isArray() const { return v_.is<Array>(); }
+    Array const & toArray(Array const & dft = dftArray) const { return v_.as(dft); }
 
-    Value(Array && a) : r_(std::move(a)) {}
-    Array & toArray(Array & dft) const { return r_.as(dft); }
+    Value(Array && a) : v_(std::move(a)) {}
+    Array & toArray(Array & dft) const { return v_.as(dft); }
 
-    Value(Object * o) : r_(std::move(o)) {}
-    Object * toObject() const { return r_.as(static_cast<Object *>(nullptr)); }
+    Value(Object * o) : v_(std::move(o)) {}
+    bool isObject() const { return v_.is<Object*>(); }
+    Object * toObject() const { return v_.as(static_cast<Object *>(nullptr)); }
 
-private:
     static Map const dftMap;
     static Array const dftArray;
-    ValueRef r_;
+
+    static Value fromJson(std::string const & json);
+    static std::string toJson(Value const & value);
+
+private:
+    ValueRef v_;
 };
 
 namespace std {

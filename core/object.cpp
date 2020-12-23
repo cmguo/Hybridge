@@ -75,7 +75,7 @@ public:
     virtual int notifySignalIndex() const override { return signal_.methodIndex(); }
     virtual const MetaMethod &notifySignal() const override { return signal_; }
     virtual Value read(const Object *) const override { return Value(); }
-    virtual bool write(const Object *, const Value &) const override { return false; }
+    virtual bool write(Object *, const Value &) const override { return false; }
 };
 
 const MetaProperty &ProxyMetaObject::property(int index) const

@@ -23,7 +23,7 @@ public:
     void attachBridge(Bridge * bridge);
 
 protected:
-    void messageReceived(const Message &message, Transport *transport);
+    void messageReceived(Message &&message);
 
 private:
     Bridge * bridge_ = nullptr;

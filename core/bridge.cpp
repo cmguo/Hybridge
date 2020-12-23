@@ -225,8 +225,18 @@ void Bridge::disconnectFrom(Transport *transport)
     }
 }
 
+void Bridge::messageReceived(Message &&message, Transport *transport)
+{
+    publisher_->handleMessage(std::move(message), transport);
+}
+
 void Bridge::signal(const Object *from, int signalIndex, Array &&args)
 {
     publisher_->signalHandler_.dispatch(from, signalIndex, std::move(args));
+}
+
+void Bridge::timerEvent()
+{
+    publisher_->timerEvent();
 }
 

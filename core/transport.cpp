@@ -53,3 +53,8 @@ void Transport::attachBridge(Bridge *bridge)
 {
     bridge_ = bridge;
 }
+
+void Transport::messageReceived(Message &&message)
+{
+    bridge_->messageReceived(std::move(message), this);
+}

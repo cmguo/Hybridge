@@ -3,6 +3,7 @@
 
 #include "Hybridge_global.h"
 #include "object.h"
+#include "message.h"
 
 #include <map>
 #include <string>
@@ -49,8 +50,12 @@ protected:
 
     virtual void stopTimer() = 0;
 
+    void messageReceived(Message &&message, Transport *transport);
+
 protected:
     void signal(Object const * object, int signalIndex, Array && args);
+
+    void timerEvent();
 
 private:
     void init();
@@ -59,6 +64,7 @@ private:
     friend class Publisher;
     friend class TestBridge;
     friend class Receiver;
+    friend class Transport;
     friend class SignalHandler;
 
     Publisher * publisher_;

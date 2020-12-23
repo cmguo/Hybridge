@@ -52,7 +52,7 @@ public:
 
     virtual Value read(Object const * object) const = 0;
 
-    virtual bool write(Object const * object, Value const & value) const = 0;
+    virtual bool write(Object * object, Value const & value) const = 0;
 };
 
 class EmptyMetaMethod : public MetaMethod
@@ -107,10 +107,17 @@ public:
     class Connection
     {
     public:
+        Connection(Object const * object = nullptr, int signalIndex = 0)
+            : object_(object)
+            , signalIndex_(signalIndex)
+        {}
         operator bool() const { return object_; }
 
+        Object const * object() const { return object_; }
+        int signalIndex() const { return signalIndex_; }
+
     protected:
-        Object * object_ = nullptr;
+        Object const * object_ = nullptr;
         int signalIndex_ = 0;
     };
 };

@@ -13,7 +13,7 @@ namespace {
     Message createResponse(std::string const &id, Value && data)
     {
         Message response;
-        response[KEY_TYPE] = static_cast<long int>(TypeResponse);
+        response[KEY_TYPE] = TypeResponse;
         response[KEY_ID] = id;
         response[KEY_DATA] = std::move(data);
         return response;
