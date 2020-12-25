@@ -82,17 +82,17 @@ public:
      * The return value of the method invocation is then serialized and a response message
      * is returned.
      */
-    Value invokeMethod(Object *const object, const int methodIndex, Array &&args);
+    Value invokeMethod(Object *const object, size_t methodIndex, Array &&args);
 
     /**
      * Set the value of property @p propertyIndex on @p object to @p value.
      */
-    void setProperty(Object *object, const int propertyIndex, Value &&value);
+    void setProperty(Object *object, size_t propertyIndex, Value &&value);
 
     /**
      * Callback of the signalHandler which forwards the signal invocation to the webchannel clients.
      */
-    void signalEmitted(Object const *object, const int signalIndex, Array &&arguments);
+    void signalEmitted(Object const *object, size_t signalIndex, Array &&arguments);
 
     /**
      * Callback for registered or wrapped objects which erases all data related to @p object.
@@ -201,12 +201,12 @@ private:
 
     // Map of objects to maps of signal indices to a set of all their property indices.
     // The last value is a set as a signal can be the notify signal of multiple properties.
-    typedef std::unordered_map<int, std::set<int> > SignalToPropertyNameMap;
+    typedef std::unordered_map<size_t, std::set<size_t> > SignalToPropertyNameMap;
     std::unordered_map<const Object *, SignalToPropertyNameMap> signalToPropertyMap_;
 
     // Objects that changed their properties and are waiting for idle client.
     // map of object name to map of signal index to arguments
-    typedef std::unordered_map<int, Value> SignalToArgumentsMap;
+    typedef std::unordered_map<size_t, Value> SignalToArgumentsMap;
     typedef std::unordered_map<Object const *, SignalToArgumentsMap> PendingPropertyUpdates;
     PendingPropertyUpdates pendingPropertyUpdates_;
 

@@ -1,14 +1,15 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "Hybridge_global.h"
 #include "value.h"
 
 typedef void Object;
 
-class MetaMethod
+class HYBRIDGE_EXPORT MetaMethod
 {
 public:
-    virtual ~MetaMethod() {}
+    virtual ~MetaMethod() = default;
 
     virtual char const * name() const = 0;
 
@@ -18,23 +19,23 @@ public:
 
     virtual bool isPublic() const = 0;
 
-    virtual int methodIndex() const = 0;
+    virtual size_t methodIndex() const = 0;
 
     virtual char const * methodSignature() const = 0;
 
-    virtual int parameterCount() const = 0;
+    virtual size_t parameterCount() const = 0;
 
-    virtual int parameterType(int index) const = 0;
+    virtual int parameterType(size_t index) const = 0;
 
-    virtual char const * parameterName(int index) const = 0;
+    virtual char const * parameterName(size_t index) const = 0;
 
     virtual Value invoke(Object * object, Array const & args) const = 0;
 };
 
-class MetaProperty
+class HYBRIDGE_EXPORT MetaProperty
 {
 public:
-    virtual ~MetaProperty() {}
+    virtual ~MetaProperty() = default;
 
     virtual char const * name() const = 0;
 
@@ -46,7 +47,7 @@ public:
 
     virtual bool hasNotifySignal() const = 0;
 
-    virtual int notifySignalIndex() const = 0;
+    virtual size_t notifySignalIndex() const = 0;
 
     virtual MetaMethod const & notifySignal() const = 0;
 
@@ -62,63 +63,63 @@ public:
     virtual bool isValid() const override { return false; }
     virtual bool isSignal() const override { return false; }
     virtual bool isPublic() const override { return false; }
-    virtual int methodIndex() const override { return -1; }
+    virtual size_t methodIndex() const override { return size_t(-1); }
     virtual const char *methodSignature() const override { return nullptr; }
-    virtual int parameterCount() const override { return -1; }
-    virtual int parameterType(int) const override { return -1; }
-    virtual const char *parameterName(int) const override { return nullptr; }
+    virtual size_t parameterCount() const override { return size_t(-1); }
+    virtual int parameterType(size_t) const override { return -1; }
+    virtual const char *parameterName(size_t) const override { return nullptr; }
     virtual Value invoke(Object *, const Array &) const override { return Value(); }
 };
 
-class MetaEnum
+class HYBRIDGE_EXPORT MetaEnum
 {
 public:
-    virtual ~MetaEnum() {}
+    virtual ~MetaEnum() = default;
 
     virtual char const * name() const = 0;
 
-    virtual int keyCount() const = 0;
+    virtual size_t keyCount() const = 0;
 
-    virtual char const * key(int index) const = 0;
+    virtual char const * key(size_t index) const = 0;
 
-    virtual int value(int index) const = 0;
+    virtual int value(size_t index) const = 0;
 
 };
 
 class MetaObject
 {
 public:
-    virtual ~MetaObject() {}
+    virtual ~MetaObject() = default;
 
     virtual char const * className() const = 0;
 
-    virtual int propertyCount() const = 0;
+    virtual size_t propertyCount() const = 0;
 
-    virtual MetaProperty const & property(int index) const = 0;
+    virtual MetaProperty const & property(size_t index) const = 0;
 
-    virtual int methodCount() const = 0;
+    virtual size_t methodCount() const = 0;
 
-    virtual MetaMethod const & method(int index) const = 0;
+    virtual MetaMethod const & method(size_t index) const = 0;
 
-    virtual int enumeratorCount() const = 0;
+    virtual size_t enumeratorCount() const = 0;
 
-    virtual MetaEnum const & enumerator(int index) const = 0;
+    virtual MetaEnum const & enumerator(size_t index) const = 0;
 
     class Connection
     {
     public:
-        Connection(Object const * object = nullptr, int signalIndex = 0)
+        Connection(Object const * object = nullptr, size_t signalIndex = 0)
             : object_(object)
             , signalIndex_(signalIndex)
         {}
         operator bool() const { return object_; }
 
         Object const * object() const { return object_; }
-        int signalIndex() const { return signalIndex_; }
+        size_t signalIndex() const { return signalIndex_; }
 
     protected:
         Object const * object_ = nullptr;
-        int signalIndex_ = 0;
+        size_t signalIndex_ = 0;
     };
 };
 

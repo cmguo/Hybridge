@@ -284,17 +284,17 @@ Value Publisher::invokeMethod(Object * object, const int methodIndex, Array &&ar
     } else if (method.isSignal()) {
         warning("Cannot invoke signal method on object.", method.name(), object);
         return Value();
-    } else if (static_cast<int>(args.size()) > method.parameterCount()) {
+    } else if (args.size() > method.parameterCount()) {
         warning("Ignoring additional arguments while invoking method on object: arguments given, but method only takes.",
                 method.name(), object, method.parameterCount());
     }
-    for (int i = 0; i < std::min(static_cast<int>(args.size()), method.parameterCount()); ++i) {
-        args[static_cast<size_t>(i)] = toVariant(std::move(args[static_cast<size_t>(i)]), method.parameterType(i));
+    for (size_t i = 0; i < std::min(args.size(), method.parameterCount()); ++i) {
+        args[i] = toVariant(std::move(args[i]), method.parameterType(i));
     }
     return method.invoke(object, args);
 }
 
-void Publisher::setProperty(Object *object, const int propertyIndex, Value &&value)
+void Publisher::setProperty(Object *object, size_t propertyIndex, Value &&value)
 {
     MetaProperty const & property = bridge_->metaObject(object)->property(propertyIndex);
     if (!property.isValid()) {
@@ -304,7 +304,7 @@ void Publisher::setProperty(Object *object, const int propertyIndex, Value &&val
     }
 }
 
-void Publisher::signalEmitted(const Object *object, const int signalIndex, Array &&arguments)
+void Publisher::signalEmitted(const Object *object, size_t signalIndex, Array &&arguments)
 {
     if (!bridge_ || bridge_->transports_.empty()) {
         if (signalIndex == 0)
@@ -316,7 +316,7 @@ void Publisher::signalEmitted(const Object *object, const int signalIndex, Array
         const std::string &objectName = mapValue(registeredObjectIds_, object);
         assert(!objectName.empty());
         message[KEY_OBJECT] = objectName;
-        message[KEY_SIGNAL] = signalIndex;
+        message[KEY_SIGNAL] = static_cast<int>(signalIndex);
         if (!arguments.empty()) {
             message[KEY_ARGS] = wrapList(arguments, nullptr, objectName);
         }

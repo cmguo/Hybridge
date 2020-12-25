@@ -16,12 +16,12 @@ public:
     // MetaObject interface
 public:
     virtual const char *className() const override;
-    virtual int propertyCount() const override;
-    virtual const MetaProperty &property(int index) const override;
-    virtual int methodCount() const override;
-    virtual const MetaMethod &method(int index) const override;
-    virtual int enumeratorCount() const override;
-    virtual const MetaEnum &enumerator(int index) const override;
+    virtual size_t propertyCount() const override;
+    virtual const MetaProperty &property(size_t index) const override;
+    virtual size_t methodCount() const override;
+    virtual const MetaMethod &method(size_t index) const override;
+    virtual size_t enumeratorCount() const override;
+    virtual const MetaEnum &enumerator(size_t index) const override;
 
 private:
     std::vector<ProxyMetaMethod> methods_;
@@ -47,15 +47,16 @@ const char *ProxyMetaObject::className() const
     return "ProxyObject";
 }
 
-int ProxyMetaObject::propertyCount() const
+size_t ProxyMetaObject::propertyCount() const
 {
-    return static_cast<int>(properties_.size());
+    return properties_.size();
 }
 
 class ProxyMetaProperty : public MetaProperty
 {
 public:
-    ProxyMetaProperty(Array const & property, MetaMethod const & signal) : property_(property), signal_(signal) {}
+    ProxyMetaProperty(Array const & property, MetaMethod const & signal)
+        : property_(property), signal_(signal) {}
 
 private:
     // [0] index
@@ -72,26 +73,27 @@ public:
     virtual int type() const override { return -1; }
     virtual bool isConstant() const override { return false; }
     virtual bool hasNotifySignal() const override { return signal_.isValid(); }
-    virtual int notifySignalIndex() const override { return signal_.methodIndex(); }
+    virtual size_t notifySignalIndex() const override { return signal_.methodIndex(); }
     virtual const MetaMethod &notifySignal() const override { return signal_; }
     virtual Value read(const Object *) const override { return Value(); }
     virtual bool write(Object *, const Value &) const override { return false; }
 };
 
-const MetaProperty &ProxyMetaObject::property(int index) const
+const MetaProperty &ProxyMetaObject::property(size_t index) const
 {
-    return properties_[static_cast<size_t>(index)];
+    return properties_[index];
 }
 
-int ProxyMetaObject::methodCount() const
+size_t ProxyMetaObject::methodCount() const
 {
-    return static_cast<int>(methods_.size());
+    return methods_.size();
 }
 
 class ProxyMetaMethod : public MetaMethod
 {
 public:
-    ProxyMetaMethod(Array const & method, bool isSignal) : method_(method), isSignal_(isSignal) {}
+    ProxyMetaMethod(Array const & method, bool isSignal)
+        : method_(method), isSignal_(isSignal) {}
 
 private:
     // [0] name
@@ -105,15 +107,15 @@ public:
     virtual bool isValid() const override { return true; }
     virtual bool isSignal() const override { return isSignal_; }
     virtual bool isPublic() const override { return true; }
-    virtual int methodIndex() const override { return method_.at(1).toInt(); }
+    virtual size_t methodIndex() const override { return static_cast<size_t>(method_.at(1).toInt()); }
     virtual const char *methodSignature() const override { return nullptr; }
-    virtual int parameterCount() const override { return -1; }
-    virtual int parameterType(int) const override { return -1; }
-    virtual const char *parameterName(int) const override { return nullptr; }
+    virtual size_t parameterCount() const override { return size_t(-1); }
+    virtual int parameterType(size_t) const override { return -1; }
+    virtual const char *parameterName(size_t) const override { return nullptr; }
     virtual Value invoke(Object *, const Array &) const override { return Value(); }
 };
 
-const MetaMethod &ProxyMetaObject::method(int index) const
+const MetaMethod &ProxyMetaObject::method(size_t index) const
 {
     static EmptyMetaMethod emptyMethod;
     for (auto & m : methods_)
@@ -122,9 +124,9 @@ const MetaMethod &ProxyMetaObject::method(int index) const
     return emptyMethod;
 }
 
-int ProxyMetaObject::enumeratorCount() const
+size_t ProxyMetaObject::enumeratorCount() const
 {
-    return static_cast<int>(enums_.size());
+    return enums_.size();
 }
 
 class ProxyMetaEnum : public MetaEnum
@@ -139,14 +141,14 @@ private:
     // MetaEnum interface
 public:
     virtual const char *name() const override { return name_.c_str(); }
-    virtual int keyCount() const override { return static_cast<int>(menum_.size()); }
-    virtual const char *key(int index) const override;
-    virtual int value(int index) const override;
+    virtual size_t keyCount() const override { return menum_.size(); }
+    virtual const char *key(size_t index) const override;
+    virtual int value(size_t index) const override;
 };
 
-const MetaEnum &ProxyMetaObject::enumerator(int index) const
+const MetaEnum &ProxyMetaObject::enumerator(size_t index) const
 {
-    return enums_[static_cast<size_t>(index)];
+    return enums_[index];
 }
 
 ProxyMetaObject::ProxyMetaObject(Map &&classinfo)
@@ -168,20 +170,20 @@ ProxyMetaObject::ProxyMetaObject(Map &&classinfo)
         Array & signalInfo = propertyInfo.at(2).toArray(emptyArray);
         static EmptyMetaMethod emptyMethod;
         properties_.emplace_back(ProxyMetaProperty(propertyInfo,
-                signalInfo.empty() ? emptyMethod : method(signalInfo.at(1).toInt())));
+                signalInfo.empty() ? emptyMethod : method(static_cast<size_t>(signalInfo.at(1).toInt()))));
     }
 }
 
-const char *ProxyMetaEnum::key(int index) const
+const char *ProxyMetaEnum::key(size_t index) const
 {
     auto it = menum_.begin();
-    std::advance(it, index);
+    std::advance(it, static_cast<int>(index));
     return it->first.c_str();
 }
 
-int ProxyMetaEnum::value(int index) const
+int ProxyMetaEnum::value(size_t index) const
 {
     auto it = menum_.begin();
-    std::advance(it, index);
+    std::advance(it, static_cast<int>(index));
     return it->second.toInt();
 }

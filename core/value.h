@@ -17,6 +17,10 @@ class Value;
 
 typedef void Object;
 
+#define DELETE_COPY(x) \
+    x(x const & o) = delete; \
+    x & operator=(x const & o) = delete;
+
 class ValueRef
 {
 public:
@@ -28,11 +32,7 @@ public:
     template<typename T, typename std::enable_if_t<std::is_copy_constructible<T>::value> * = nullptr>
     ValueRef(T const & t) : v_(new T(t)), d_(&deleter<T>) {}
 
-    ValueRef(ValueRef const & o) = delete;
-
     ValueRef(ValueRef && o) : v_(nullptr), d_(nullptr) { swap(o); }
-
-    ValueRef& operator=(ValueRef const & o) = delete;
 
     ValueRef& operator=(ValueRef && o) { swap(o); return *this; }
 
@@ -43,6 +43,8 @@ public:
 
     template<typename T>
     static ValueRef ref(T & t) { ValueRef r; r.v_ = &t; r.d_ = &reference<T>; return r; }
+
+    DELETE_COPY(ValueRef)
 
 public:
     void swap(ValueRef & o)
@@ -82,13 +84,11 @@ class HYBRIDGE_EXPORT Value
 public:
     Value() {}
 
-    Value(Value const & o) = delete;
-
     Value(Value && o) : v_(std::move(o.v_)) {}
 
-    Value& operator=(Value const & o) = delete;
-
     Value& operator=(Value && o) { v_ = std::move(o.v_); return *this; }
+
+    DELETE_COPY(Value)
 
     template<typename T>
     Value ref() const { Value v; v.v_ = v_.ref<T>(); return v; }
