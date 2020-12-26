@@ -1,8 +1,8 @@
 #include "signalhandler.h"
 #include "publisher.h"
 #include "collection.h"
-#include "value.h"
-#include "bridge.h"
+#include "core/value.h"
+#include "core/bridge.h"
 #include "debug.h"
 
 SignalHandler::SignalHandler(Publisher *receiver)

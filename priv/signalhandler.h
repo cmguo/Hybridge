@@ -1,8 +1,7 @@
 #ifndef SIGNALHANDLER_H
 #define SIGNALHANDLER_H
 
-#include "Hybridge_global.h"
-#include "object.h"
+#include "core/object.h"
 
 #include <unordered_map>
 #include <vector>

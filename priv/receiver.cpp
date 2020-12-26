@@ -1,8 +1,8 @@
 #include "receiver.h"
-#include "bridge.h"
+#include "core/bridge.h"
 #include "collection.h"
 #include "debug.h"
-#include "transport.h"
+#include "core/transport.h"
 
 Receiver::Receiver(Bridge * bridge)
     : bridge_(bridge)

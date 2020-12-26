@@ -1,10 +1,10 @@
 #include "publisher.h"
-#include "bridge.h"
-#include "transport.h"
-#include "object.h"
-#include "bridge.h"
+#include "core/bridge.h"
+#include "core/transport.h"
+#include "core/object.h"
+#include "core/bridge.h"
 #include "collection.h"
-#include "value.h"
+#include "core/value.h"
 #include "debug.h"
 
 namespace {

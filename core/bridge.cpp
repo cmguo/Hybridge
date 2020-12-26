@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include "bridge.h"
-#include "publisher.h"
+#include "priv/publisher.h"
 #include "transport.h"
 
 #include <algorithm>

@@ -1,6 +1,6 @@
 #include "object.h"
 #include "message.h"
-#include "receiver.h"
+#include "priv/receiver.h"
 
 #include <algorithm>
 

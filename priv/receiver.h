@@ -1,8 +1,8 @@
 #ifndef RECEIVER_H
 #define RECEIVER_H
 
-#include "object.h"
-#include "message.h"
+#include "core/object.h"
+#include "core/message.h"
 
 class Bridge;
 class Transport;

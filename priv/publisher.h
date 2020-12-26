@@ -1,11 +1,10 @@
 #ifndef PUBLISHER_H
 #define PUBLISHER_H
 
-#include "Hybridge_global.h"
-#include "value.h"
-#include "object.h"
+#include "core/value.h"
+#include "core/object.h"
 #include "signalhandler.h"
-#include "message.h"
+#include "core/message.h"
 
 #include <set>
 
