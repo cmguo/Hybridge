@@ -230,9 +230,14 @@ void Bridge::messageReceived(Message &&message, Transport *transport)
     publisher_->handleMessage(std::move(message), transport);
 }
 
-void Bridge::signal(const Object *from, size_t signalIndex, Array &&args)
+void Bridge::signal(const Object *object, size_t signalIndex, Array &&args)
 {
-    publisher_->signalHandler_.dispatch(from, signalIndex, std::move(args));
+    publisher_->signalHandler_.dispatch(object, signalIndex, std::move(args));
+}
+
+void Bridge::propertyChanged(const Object *object, size_t propertyIndex)
+{
+    publisher_->propertyChanged(object, propertyIndex);
 }
 
 void Bridge::timerEvent()

@@ -145,6 +145,8 @@ public:
      */
     void handleMessage(Message &&message, Transport *transport);
 
+    void propertyChanged(Object const * object, size_t propertyIndex);
+
 protected:
     void timerEvent();
 
@@ -208,6 +210,8 @@ private:
     typedef std::unordered_map<size_t, Value> SignalToArgumentsMap;
     typedef std::unordered_map<Object const *, SignalToArgumentsMap> PendingPropertyUpdates;
     PendingPropertyUpdates pendingPropertyUpdates_;
+
+    std::unordered_map<Object const *, std::set<size_t> > pendingPropertyUpdates2_;
 
     // Aggregate property updates since we get multiple Qt.idle message when we have multiple
     // clients. They all share the same QWebProcess though so we must take special care to

@@ -55,6 +55,8 @@ protected:
 protected:
     void signal(Object const * object, size_t signalIndex, Array && args);
 
+    void propertyChanged(Object const * object, size_t propertyIndex);
+
     void timerEvent();
 
 private:

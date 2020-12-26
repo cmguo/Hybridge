@@ -200,7 +200,8 @@ void Publisher::initializePropertyUpdates(const Object *const object, const Map 
 
 void Publisher::sendPendingPropertyUpdates()
 {
-    if (blockUpdates_ || !clientIsIdle_ || pendingPropertyUpdates_.empty()) {
+    if (blockUpdates_ || !clientIsIdle_
+            || (pendingPropertyUpdates_.empty() && pendingPropertyUpdates2_.empty())) {
         return;
     }
 
@@ -246,8 +247,39 @@ void Publisher::sendPendingPropertyUpdates()
             data.emplace_back(std::move(obj));
         }
     }
-
     pendingPropertyUpdates_.clear();
+
+    for (auto & it : pendingPropertyUpdates2_) {
+        const Object *object = it.first;
+        const MetaObject *const metaObject = bridge_->metaObject(object);
+        const std::string objectId = mapValue(registeredObjectIds_, object);
+        // maps property name to current property value
+        Map properties;
+        for (size_t propertyIndex : it.second) {
+            // TODO: can we get rid of the int <-> string conversions here?
+            const MetaProperty &property = metaObject->property(propertyIndex);
+            assert(property.isValid());
+            properties[stringNumber(propertyIndex)] = wrapResult(property.read(object), nullptr, objectId);
+        }
+        Map obj;
+        obj[KEY_OBJECT] = std::move(objectId);
+        obj[KEY_PROPERTIES] = std::move(properties);
+        Value obj2(std::move(obj));
+        Value objref = obj2.ref<Map>();
+
+        // if the object is auto registered, just send the update only to clients which know this object
+        if (mapContains(wrappedObjects_, objectId)) {
+            for (Transport *transport : mapValue(wrappedObjects_, objectId).transports) {
+                Array &arr = specificUpdates[transport];
+                arr.emplace_back(std::move(obj2));
+                obj2 = objref.ref<Map>();
+            }
+        } else {
+            data.emplace_back(std::move(obj));
+        }
+    }
+    pendingPropertyUpdates2_.clear();
+
     Message message;
     message[KEY_TYPE] = TypePropertyUpdate;
 
@@ -585,6 +617,17 @@ void Publisher::handleMessage(Message &&message, Transport *transport)
             setProperty(object, static_cast<size_t>(mapValue(message, KEY_PROPERTY).toInt(-1)),
                         std::move(mapValue(message, KEY_VALUE)));
         }
+    }
+}
+
+void Publisher::propertyChanged(const Object *object, size_t propertyIndex)
+{
+    if (!bridge_ || bridge_->transports_.empty()) {
+        return;
+    }
+    pendingPropertyUpdates2_[object].insert(propertyIndex);
+    if (clientIsIdle_ && !blockUpdates_) {
+        bridge_->startTimer(PROPERTY_UPDATE_INTERVAL);
     }
 }
 
