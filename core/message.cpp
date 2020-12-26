@@ -16,10 +16,10 @@ const std::string KEY_ARGS = ("args");
 const std::string KEY_PROPERTY = ("property");
 const std::string KEY_VALUE = ("value");
 
-char const * stringNumber(int n)
+char const * stringNumber(size_t n)
 {
     static char str[16];
-    _itoa_s(n, str, 10);
+    _itoa_s(static_cast<int>(n), str, 10);
     return str;
 }
 

@@ -45,7 +45,7 @@ private:
     friend class TestBridge;
 
     Bridge * bridge_;
-    long int msgId_ = 0;
+    size_t msgId_ = 0;
 
     typedef std::unordered_map<std::string, ProxyObject*> TransportedObjectsMap;
     std::unordered_map<Transport*, TransportedObjectsMap> transportedObjects_;

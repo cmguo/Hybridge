@@ -42,7 +42,7 @@ protected:
 
     virtual std::string createUuid() const = 0;
 
-    virtual MetaObject::Connection connect(Object const * object, int signalIndex) = 0;
+    virtual MetaObject::Connection connect(Object const * object, size_t signalIndex) = 0;
 
     virtual bool disconnect(MetaObject::Connection const & c) = 0;
 
@@ -53,7 +53,7 @@ protected:
     void messageReceived(Message &&message, Transport *transport);
 
 protected:
-    void signal(Object const * object, int signalIndex, Array && args);
+    void signal(Object const * object, size_t signalIndex, Array && args);
 
     void timerEvent();
 

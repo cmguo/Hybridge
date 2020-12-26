@@ -42,6 +42,6 @@ typedef Map Message;
 
 MessageType toType(const Value &value);
 
-char const * stringNumber(int n);
+char const * stringNumber(size_t n);
 
 #endif // MESSAGE_H

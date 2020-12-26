@@ -18,7 +18,7 @@ SignalHandler::SignalHandler(Publisher *receiver)
  *
  * The return value is also verified to ensure it is a signal.
  */
-inline MetaMethod const & findSignal(const MetaObject *metaObject, const int signalIndex)
+inline MetaMethod const & findSignal(const MetaObject *metaObject, size_t signalIndex)
 {
     MetaMethod const & signal = metaObject->method(signalIndex);
     if (!signal.isValid()) {
@@ -30,7 +30,7 @@ inline MetaMethod const & findSignal(const MetaObject *metaObject, const int sig
     return signal;
 }
 
-void SignalHandler::connectTo(const Object *object, const int signalIndex)
+void SignalHandler::connectTo(const Object *object, size_t signalIndex)
 {
     const MetaObject *metaObject = m_receiver->bridge_->metaObject(object);
     const MetaMethod &signal = findSignal(metaObject, signalIndex);
@@ -65,7 +65,7 @@ void SignalHandler::setupSignalArgumentTypes(const MetaObject *metaObject, const
     // find the type ids of the signal parameters, see also QSignalSpy::initArgs
     std::vector<int> args;
     args.reserve(static_cast<size_t>(signal.parameterCount()));
-    for (int i = 0; i < signal.parameterCount(); ++i) {
+    for (size_t i = 0; i < signal.parameterCount(); ++i) {
         int tp = signal.parameterType(i);
 //        if (tp == QMetaType::UnknownType) {
 //            warning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
@@ -77,12 +77,12 @@ void SignalHandler::setupSignalArgumentTypes(const MetaObject *metaObject, const
     m_signalArgumentTypes[metaObject][signal.methodIndex()] = args;
 }
 
-void SignalHandler::dispatch(const Object *object, const int signalIdx, Array && arguments)
+void SignalHandler::dispatch(const Object *object, size_t signalIdx, Array && arguments)
 {
     const MetaObject *metaObject = m_receiver->bridge_->metaObject(object);
     assert(mapContains(m_signalArgumentTypes, metaObject));
-    const std::unordered_map<int, std::vector<int> > &objectSignalArgumentTypes = mapValue(m_signalArgumentTypes, metaObject);
-    std::unordered_map<int, std::vector<int> >::const_iterator signalIt = objectSignalArgumentTypes.find(signalIdx);
+    const std::unordered_map<size_t, std::vector<int> > &objectSignalArgumentTypes = mapValue(m_signalArgumentTypes, metaObject);
+    std::unordered_map<size_t, std::vector<int> >::const_iterator signalIt = objectSignalArgumentTypes.find(signalIdx);
     if (signalIt == objectSignalArgumentTypes.cend()) {
         // not connected to this signal, skip
         return;
@@ -104,7 +104,7 @@ void SignalHandler::dispatch(const Object *object, const int signalIdx, Array &&
     m_receiver->signalEmitted(object, signalIdx, std::move(arguments));
 }
 
-void SignalHandler::disconnectFrom(const Object *object, const int signalIndex)
+void SignalHandler::disconnectFrom(const Object *object, size_t signalIndex)
 {
     assert(mapContains(mapValue(m_connectionsCounter, object), signalIndex));
     ConnectionPair &connection = m_connectionsCounter[object][signalIndex];

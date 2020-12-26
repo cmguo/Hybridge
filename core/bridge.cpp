@@ -230,7 +230,7 @@ void Bridge::messageReceived(Message &&message, Transport *transport)
     publisher_->handleMessage(std::move(message), transport);
 }
 
-void Bridge::signal(const Object *from, int signalIndex, Array &&args)
+void Bridge::signal(const Object *from, size_t signalIndex, Array &&args)
 {
     publisher_->signalHandler_.dispatch(from, signalIndex, std::move(args));
 }

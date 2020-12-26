@@ -19,14 +19,14 @@ public:
      * If the handler is already connected to the signal, an internal counter is increased,
      * i.e. the handler never connects multiple times to the same signal.
      */
-    void connectTo(const Object *object, const int signalIndex);
+    void connectTo(const Object *object, size_t signalIndex);
 
     /**
      * Decrease the connection counter for the connection to the given signal.
      *
      * When the counter drops to zero, the connection is disconnected.
      */
-    void disconnectFrom(const Object *object, const int signalIndex);
+    void disconnectFrom(const Object *object, size_t signalIndex);
 
     /**
      * @internal
@@ -51,7 +51,7 @@ public:
      * The @p argumentData is converted to a QVariantList and then passed to the receiver's
      * signalEmitted method.
      */
-    void dispatch(const Object *object, const int signalIdx, Array && argumentData);
+    void dispatch(const Object *object, size_t signalIdx, Array && argumentData);
 
 private:
     void setupSignalArgumentTypes(const MetaObject *metaObject, const MetaMethod &signal);
@@ -61,7 +61,7 @@ private:
     // maps meta object -> signalIndex -> list of arguments
     // NOTE: This data is "leaked" on disconnect until deletion of the handler, is this a problem?
     typedef std::vector<int> ArgumentTypeList;
-    typedef std::unordered_map<int, ArgumentTypeList> SignalArgumentHash;
+    typedef std::unordered_map<size_t, ArgumentTypeList> SignalArgumentHash;
     std::unordered_map<const MetaObject *, SignalArgumentHash > m_signalArgumentTypes;
 
     /*
@@ -75,7 +75,7 @@ private:
      * TODO: Move more of this logic to the HTML client side, esp. the connection counting.
      */
     typedef std::pair<MetaObject::Connection, int> ConnectionPair;
-    typedef std::unordered_map<int, ConnectionPair> SignalConnectionHash;
+    typedef std::unordered_map<size_t, ConnectionPair> SignalConnectionHash;
     typedef std::unordered_map<const Object*, SignalConnectionHash> ConnectionHash;
     ConnectionHash m_connectionsCounter;
 };

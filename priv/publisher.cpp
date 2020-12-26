@@ -64,13 +64,13 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
     Map qtEnums;
 
     const MetaObject *metaObject = bridge_->metaObject(object);
-    std::set<int> notifySignals;
+    std::set<size_t> notifySignals;
     std::set<std::string > identifiers;
-    for (int i = 0; i < metaObject->propertyCount(); ++i) {
+    for (size_t i = 0; i < metaObject->propertyCount(); ++i) {
         const MetaProperty &prop = metaObject->property(i);
         Array propertyInfo;
         const std::string &propertyName = prop.name();
-        propertyInfo.emplace_back(i);
+        propertyInfo.emplace_back(static_cast<int>(i));
         propertyInfo.emplace_back(propertyName);
         identifiers.emplace(propertyName);
         Array signalInfo;
@@ -85,7 +85,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
             } else {
                 signalInfo.emplace_back(notifySignal);
             }
-            signalInfo.emplace_back(prop.notifySignalIndex());
+            signalInfo.emplace_back(static_cast<int>(prop.notifySignalIndex()));
         } else if (!prop.isConstant()) {
             warning("Property '%s'' of object '%s' has no notify signal and is not constant, "
                      "value updates in HTML will be broken!",
@@ -95,7 +95,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         propertyInfo.emplace_back(wrapResult(prop.read(object), transport));
         properties.emplace_back(std::move(propertyInfo));
     }
-    for (int i = 0; i < metaObject->methodCount(); ++i) {
+    for (size_t i = 0; i < metaObject->methodCount(); ++i) {
         if (contains(notifySignals, i)) {
             continue;
         }
@@ -112,17 +112,17 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         // send data as array to client with format: [name, index]
         Array data;
         data.emplace_back(name);
-        data.emplace_back(i);
+        data.emplace_back(static_cast<int>(i));
         if (method.isSignal()) {
             signals.emplace_back(std::move(data));
         } else if (method.isPublic()) {
             methods.emplace_back(std::move(data));
         }
     }
-    for (int i = 0; i < metaObject->enumeratorCount(); ++i) {
+    for (size_t i = 0; i < metaObject->enumeratorCount(); ++i) {
         MetaEnum const & enumerator = metaObject->enumerator(i);
         Map values;
-        for (int k = 0; k < enumerator.keyCount(); ++k) {
+        for (size_t k = 0; k < enumerator.keyCount(); ++k) {
             values[enumerator.key(k)] = enumerator.value(k);
         }
         qtEnums[enumerator.name()] = std::move(values);
@@ -174,7 +174,7 @@ void Publisher::initializePropertyUpdates(const Object *const object, const Map 
             warning("Invalid property info encountered:", propertyInfoVar);
             continue;
         }
-        const int propertyIndex = propertyInfo[0].toInt(0);
+        size_t propertyIndex = static_cast<size_t>(propertyInfo[0].toInt(0));
         const Array &signalData = propertyInfo.at(2).toArray();
 
         if (signalData.empty()) {
@@ -182,9 +182,9 @@ void Publisher::initializePropertyUpdates(const Object *const object, const Map 
             continue;
         }
 
-        const int signalIndex = signalData.at(1).toInt();
+        size_t signalIndex = static_cast<size_t>(signalData.at(1).toInt());
 
-        std::set<int> &connectedProperties = signalToPropertyMap_[object][signalIndex];
+        std::set<size_t> &connectedProperties = signalToPropertyMap_[object][signalIndex];
 
         // Only connect for a property update once
         if (connectedProperties.empty()) {
@@ -221,7 +221,7 @@ void Publisher::sendPendingPropertyUpdates()
         const SignalToArgumentsMap::const_iterator sigEnd = it->second.cend();
         for (SignalToArgumentsMap::const_iterator sigIt = it->second.cbegin(); sigIt != sigEnd; ++sigIt) {
             // TODO: can we get rid of the int <-> string conversions here?
-            for (int propertyIndex : mapValue(objectssignalToPropertyMap_, sigIt->first)) {
+            for (size_t propertyIndex : mapValue(objectssignalToPropertyMap_, sigIt->first)) {
                 const MetaProperty &property = metaObject->property(propertyIndex);
                 assert(property.isValid());
                 properties[stringNumber(propertyIndex)] = wrapResult(property.read(object), nullptr, objectId);
@@ -267,7 +267,7 @@ void Publisher::sendPendingPropertyUpdates()
     }
 }
 
-Value Publisher::invokeMethod(Object * object, const int methodIndex, Array &&args)
+Value Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args)
 {
     const MetaMethod &method = bridge_->metaObject(object)->method(methodIndex);
 
@@ -572,17 +572,17 @@ void Publisher::handleMessage(Message &&message, Transport *transport)
             Array args2;
             Value result =
                 invokeMethod(object,
-                             mapValue(message, KEY_METHOD).toInt(-1),
+                             static_cast<size_t>(mapValue(message, KEY_METHOD).toInt(-1)),
                              std::move(mapValue(message, KEY_ARGS).toArray(args2)));
             //if (!publisherExists || !transportExists)
             //    return;
             transport->sendMessage(createResponse(mapValue(message, KEY_ID).toString(), wrapResult(std::move(result), transport)));
         } else if (type == TypeConnectToSignal) {
-            signalHandler_.connectTo(object, mapValue(message, KEY_SIGNAL).toInt(-1));
+            signalHandler_.connectTo(object, static_cast<size_t>(mapValue(message, KEY_SIGNAL).toInt(-1)));
         } else if (type == TypeDisconnectFromSignal) {
-            signalHandler_.disconnectFrom(object, mapValue(message, KEY_SIGNAL).toInt(-1));
+            signalHandler_.disconnectFrom(object, static_cast<size_t>(mapValue(message, KEY_SIGNAL).toInt(-1)));
         } else if (type == TypeSetProperty) {
-            setProperty(object, mapValue(message, KEY_PROPERTY).toInt(-1),
+            setProperty(object, static_cast<size_t>(mapValue(message, KEY_PROPERTY).toInt(-1)),
                         std::move(mapValue(message, KEY_VALUE)));
         }
     }
