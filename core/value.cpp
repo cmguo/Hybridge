@@ -57,8 +57,8 @@ struct MyHandler
     bool Int(int i) { return Value_(i); }
     bool Uint(unsigned u) { return Value_(static_cast<int>(u)); }
     bool Int64(int64_t i) { return Value_(i); }
-    bool Uint64(uint64_t u) { return Value_(static_cast<int>(u)); }
-    bool Double(double d) { return Value_(static_cast<int>(d)); }
+    bool Uint64(uint64_t u) { return Value_(static_cast<long long>(u)); }
+    bool Double(double d) { return Value_(d); }
     bool RawNumber(const char* str, SizeType length, bool /*copy*/) { return Value_(std::string(str, length)); }
     bool String(const char* str, SizeType length, bool /*copy*/) { return Value_(std::string(str, length)); }
     bool StartObject() {
@@ -133,6 +133,8 @@ static void writeValue(Writer<StringBuffer> & writer, Value const & v)
         writer.Int64(v.toLong());
     else if (v.isBool())
         writer.Bool(v.toBool());
+    else if (v.isFloat())
+        writer.Double(static_cast<double>(v.toFloat()));
     else if (v.isDouble())
         writer.Double(v.toDouble());
     else if (v.isString())
@@ -143,7 +145,7 @@ static void writeValue(Writer<StringBuffer> & writer, Value const & v)
         for (Value const & v2 : a) {
             writeValue(writer, v2);
         }
-        writer.EndArray(a.size());
+        writer.EndArray(static_cast<unsigned>(a.size()));
     } else if (v.isMap()) {
         Map const & n = v.toMap();
         writer.StartObject();
@@ -151,7 +153,7 @@ static void writeValue(Writer<StringBuffer> & writer, Value const & v)
             writer.Key(v2.first.c_str());
             writeValue(writer, v2.second);
         }
-        writer.EndObject(n.size());
+        writer.EndObject(static_cast<unsigned>(n.size()));
     } else {
         writer.Null();
     }

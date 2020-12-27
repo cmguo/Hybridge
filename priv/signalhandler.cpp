@@ -2,7 +2,7 @@
 #include "publisher.h"
 #include "collection.h"
 #include "core/value.h"
-#include "core/bridge.h"
+#include "core/channel.h"
 #include "debug.h"
 
 SignalHandler::SignalHandler(Publisher *receiver)

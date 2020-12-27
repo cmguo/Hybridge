@@ -1,5 +1,5 @@
 #include "transport.h"
-#include "bridge.h"
+#include "channel.h"
 
 /*!
     \class Transport
@@ -49,7 +49,7 @@ Transport::~Transport()
     }
 }
 
-void Transport::attachBridge(Bridge *bridge)
+void Transport::attachBridge(Channel *bridge)
 {
     bridge_ = bridge;
 }

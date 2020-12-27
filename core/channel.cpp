@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include "bridge.h"
+#include "channel.h"
 #include "priv/publisher.h"
 #include "transport.h"
 
@@ -90,7 +90,7 @@
 
     Shared code to initialize the Bridge from both constructors.
 */
-void Bridge::init()
+void Channel::init()
 {
     publisher_ = new Publisher(this);
     //Object::connect(publisher, SIGNAL(blockUpdatesChanged(bool)),
@@ -104,7 +104,7 @@ void Bridge::init()
     Transport. The HTML clients also need to be setup appropriately
     using \l{qtwebchannel-javascript.html}{\c Bridge.js}.
 */
-Bridge::Bridge()
+Channel::Channel()
 {
     init();
 }
@@ -112,7 +112,7 @@ Bridge::Bridge()
 /*!
     Destroys the Bridge.
 */
-Bridge::~Bridge()
+Channel::~Channel()
 {
 }
 
@@ -126,7 +126,7 @@ Bridge::~Bridge()
 
     \sa Bridge::registerObject(), Bridge::deregisterObject(), Bridge::registeredObjects()
 */
-void Bridge::registerObjects(const std::unordered_map< std::string , Object * > &objects)
+void Channel::registerObjects(const std::unordered_map< std::string , Object * > &objects)
 {
     const std::unordered_map<std::string , Object *>::const_iterator end = objects.cend();
     for (std::unordered_map<std::string , Object *>::const_iterator it = objects.cbegin(); it != end; ++it) {
@@ -139,7 +139,7 @@ void Bridge::registerObjects(const std::unordered_map< std::string , Object * > 
 
     \sa Bridge::registerObjects(), Bridge::registerObject(), Bridge::deregisterObject()
 */
-std::unordered_map<std::string , Object *> Bridge::registeredObjects() const
+std::unordered_map<std::string , Object *> Channel::registeredObjects() const
 {
     return publisher_->registeredObjects_;
 }
@@ -154,7 +154,7 @@ std::unordered_map<std::string , Object *> Bridge::registeredObjects() const
 
     \sa Bridge::registerObjects(), Bridge::deregisterObject(), Bridge::registeredObjects()
 */
-void Bridge::registerObject(const std::string  &id, Object *object)
+void Channel::registerObject(const std::string  &id, Object *object)
 {
     publisher_->registerObject(id, object);
 }
@@ -166,7 +166,7 @@ void Bridge::registerObject(const std::string  &id, Object *object)
 
     \sa Bridge::registerObjects(), Bridge::registerObject(), Bridge::registeredObjects()
 */
-void Bridge::deregisterObject(Object *object)
+void Channel::deregisterObject(Object *object)
 {
     // handling of deregistration is analogously to handling of a destroyed signal
     Array args;
@@ -184,12 +184,12 @@ void Bridge::deregisterObject(Object *object)
 */
 
 
-bool Bridge::blockUpdates() const
+bool Channel::blockUpdates() const
 {
     return publisher_->blockUpdates_;
 }
 
-void Bridge::setBlockUpdates(bool block)
+void Channel::setBlockUpdates(bool block)
 {
     publisher_->setBlockUpdates(block);
 }
@@ -202,7 +202,7 @@ void Bridge::setBlockUpdates(bool block)
 
     \sa Transport, Bridge::disconnectFrom()
 */
-void Bridge::connectTo(Transport *transport)
+void Channel::connectTo(Transport *transport)
 {
     if (std::find(transports_.begin(), transports_.end(), transport) == transports_.end()) {
         transports_.emplace_back(transport);
@@ -215,7 +215,7 @@ void Bridge::connectTo(Transport *transport)
 
     \sa Bridge::connectTo()
 */
-void Bridge::disconnectFrom(Transport *transport)
+void Channel::disconnectFrom(Transport *transport)
 {
     auto idx = std::find(transports_.begin(), transports_.end(), transport);
     if (idx != transports_.end()) {
@@ -225,22 +225,22 @@ void Bridge::disconnectFrom(Transport *transport)
     }
 }
 
-void Bridge::messageReceived(Message &&message, Transport *transport)
+void Channel::messageReceived(Message &&message, Transport *transport)
 {
     publisher_->handleMessage(std::move(message), transport);
 }
 
-void Bridge::signal(const Object *object, size_t signalIndex, Array &&args)
+void Channel::signal(const Object *object, size_t signalIndex, Array &&args)
 {
     publisher_->signalHandler_.dispatch(object, signalIndex, std::move(args));
 }
 
-void Bridge::propertyChanged(const Object *object, size_t propertyIndex)
+void Channel::propertyChanged(const Object *object, size_t propertyIndex)
 {
     publisher_->propertyChanged(object, propertyIndex);
 }
 
-void Bridge::timerEvent()
+void Channel::timerEvent()
 {
     publisher_->timerEvent();
 }

@@ -4,7 +4,7 @@
 #include "core/object.h"
 #include "core/message.h"
 
-class Bridge;
+class Channel;
 class Transport;
 
 class Receiver
@@ -12,7 +12,7 @@ class Receiver
 public:
     typedef ProxyObject::response_t response_t;
 
-    Receiver(Bridge * bridge);
+    Receiver(Channel * bridge);
 
 public:
     /**
@@ -41,10 +41,10 @@ protected:
     ProxyObject * unwrapObject(Transport *transport, Map && data);
 
 private:
-    friend class Bridge;
+    friend class Channel;
     friend class TestBridge;
 
-    Bridge * bridge_;
+    Channel * bridge_;
     size_t msgId_ = 0;
 
     typedef std::unordered_map<std::string, ProxyObject*> TransportedObjectsMap;

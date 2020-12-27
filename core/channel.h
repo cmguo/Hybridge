@@ -1,5 +1,5 @@
-#ifndef BRIDGE_H
-#define BRIDGE_H
+#ifndef CHANNEL_H
+#define CHANNEL_H
 
 #include "Hybridge_global.h"
 #include "object.h"
@@ -13,13 +13,13 @@ class Transport;
 class Publisher;
 class TestBridge;
 
-class HYBRIDGE_EXPORT Bridge
+class HYBRIDGE_EXPORT Channel
 {
 public:
-    explicit Bridge();
-    Bridge(Bridge const & o) = delete;
-    Bridge& operator=(Bridge const & o) = delete;
-    virtual ~Bridge();
+    explicit Channel();
+    Channel(Channel const & o) = delete;
+    Channel& operator=(Channel const & o) = delete;
+    virtual ~Channel();
 
     void registerObjects(const std::unordered_map<std::string , Object*> &objects);
     std::unordered_map<std::string , Object*> registeredObjects() const;
@@ -50,9 +50,9 @@ protected:
 
     virtual void stopTimer() = 0;
 
+protected:
     void messageReceived(Message &&message, Transport *transport);
 
-protected:
     void signal(Object const * object, size_t signalIndex, Array && args);
 
     void propertyChanged(Object const * object, size_t propertyIndex);
@@ -73,4 +73,4 @@ private:
     std::vector<Transport*> transports_;
 };
 
-#endif // BRIDGE_H
+#endif // CHANNEL_H

@@ -109,6 +109,10 @@ public:
     bool isLong() const { return v_.is<long long>(); }
     long long toLong(long long dft = 0) const { return v_.as(dft); }
 
+    Value(float d) : v_(std::move(d)) {}
+    bool isFloat() const { return v_.is<float>(); }
+    float toFloat(float dft = 0) const { return v_.as(dft); }
+
     Value(double d) : v_(std::move(d)) {}
     bool isDouble() const { return v_.is<double>(); }
     double toDouble(double dft = 0) const { return v_.as(dft); }

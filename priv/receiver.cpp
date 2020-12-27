@@ -1,10 +1,10 @@
 #include "receiver.h"
-#include "core/bridge.h"
+#include "core/channel.h"
 #include "collection.h"
 #include "debug.h"
 #include "core/transport.h"
 
-Receiver::Receiver(Bridge * bridge)
+Receiver::Receiver(Channel * bridge)
     : bridge_(bridge)
 {
 }

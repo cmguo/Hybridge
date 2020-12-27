@@ -1,12 +1,12 @@
 SOURCES += \
-    $$PWD/bridge.cpp \
+    $$PWD/channel.cpp \
     $$PWD/message.cpp \
     $$PWD/object.cpp \
     $$PWD/transport.cpp \
     $$PWD/value.cpp
 
 HEADERS += \
-    $$PWD/bridge.h \
+    $$PWD/channel.h \
     $$PWD/message.h \
     $$PWD/object.h \
     $$PWD/transport.h \

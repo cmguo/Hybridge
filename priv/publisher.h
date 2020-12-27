@@ -10,7 +10,7 @@
 
 // NOTE: keep in sync with corresponding maps in Bridge.js and WebChannelTest.qml
 
-class Bridge;
+class Channel;
 class Transport;
 class SignalHandler;
 class Publisher;
@@ -18,7 +18,7 @@ class Publisher;
 class Publisher
 {
 public:
-    explicit Publisher(Bridge *bridge);
+    explicit Publisher(Channel *bridge);
     virtual ~Publisher();
 
     /**
@@ -151,11 +151,11 @@ protected:
     void timerEvent();
 
 private:
-    friend class Bridge;
+    friend class Channel;
     friend class TestBridge;
     friend class SignalHandler;
 
-    Bridge * bridge_;
+    Channel * bridge_;
     SignalHandler signalHandler_;
 
     // true when the client is idle, false otherwise

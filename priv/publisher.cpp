@@ -1,8 +1,8 @@
 #include "publisher.h"
-#include "core/bridge.h"
+#include "core/channel.h"
 #include "core/transport.h"
 #include "core/object.h"
-#include "core/bridge.h"
+#include "core/channel.h"
 #include "collection.h"
 #include "core/value.h"
 #include "debug.h"
@@ -23,12 +23,12 @@ namespace {
     const int PROPERTY_UPDATE_INTERVAL = 50;
 }
 
-Publisher::Publisher(Bridge * bridge)
+Publisher::Publisher(Channel * bridge)
     : bridge_(bridge)
     , signalHandler_(this)
     , clientIsIdle_(false)
     , blockUpdates_(false)
-    , propertyUpdatesInitialized_(false)
+    , propertyUpdatesInitialized_(true)
 {
 }
 

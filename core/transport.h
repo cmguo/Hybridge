@@ -4,7 +4,7 @@
 #include "Hybridge_global.h"
 #include "message.h"
 
-class Bridge;
+class Channel;
 
 class HYBRIDGE_EXPORT Transport
 {
@@ -20,13 +20,13 @@ public:
 public:
     virtual void sendMessage(const Message &message) = 0;
 
-    void attachBridge(Bridge * bridge);
+    void attachBridge(Channel * bridge);
 
 protected:
     void messageReceived(Message &&message);
 
 private:
-    Bridge * bridge_ = nullptr;
+    Channel * bridge_ = nullptr;
 };
 
 #endif // TRANSPORT_H
