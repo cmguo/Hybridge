@@ -20,7 +20,7 @@ public:
 public:
     virtual void sendMessage(const Message &message) = 0;
 
-    void attachBridge(Channel * bridge);
+    void setChannel(Channel * bridge);
 
 protected:
     void messageReceived(Message &&message);

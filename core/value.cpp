@@ -78,6 +78,7 @@ struct MyHandler
         Layer & l = stack.back();
         if (l.s == InObject) {
             key = std::string(str, length);
+            l.s = InValue;
             return true;
         }
         return false;
@@ -178,3 +179,9 @@ std::string Value::toJson(const Value &value)
     return sb.GetString();
 }
 
+
+std::ostream &std::operator <<(std::ostream & os, const Value & v)
+{
+    os << Value::toJson(v);
+    return os;
+}

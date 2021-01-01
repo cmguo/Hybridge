@@ -155,7 +155,7 @@ private:
     friend class TestBridge;
     friend class SignalHandler;
 
-    Channel * bridge_;
+    Channel * channel_;
     SignalHandler signalHandler_;
 
     // true when the client is idle, false otherwise

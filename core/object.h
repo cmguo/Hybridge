@@ -29,7 +29,7 @@ public:
 
     virtual char const * parameterName(size_t index) const = 0;
 
-    virtual Value invoke(Object * object, Array const & args) const = 0;
+    virtual Value invoke(Object * object, Array && args) const = 0;
 };
 
 class HYBRIDGE_EXPORT MetaProperty
@@ -53,7 +53,7 @@ public:
 
     virtual Value read(Object const * object) const = 0;
 
-    virtual bool write(Object * object, Value const & value) const = 0;
+    virtual bool write(Object * object, Value && value) const = 0;
 };
 
 class EmptyMetaMethod : public MetaMethod
@@ -68,7 +68,7 @@ public:
     virtual size_t parameterCount() const override { return size_t(-1); }
     virtual int parameterType(size_t) const override { return -1; }
     virtual const char *parameterName(size_t) const override { return nullptr; }
-    virtual Value invoke(Object *, const Array &) const override { return Value(); }
+    virtual Value invoke(Object *, Array &&) const override { return Value(); }
 };
 
 class HYBRIDGE_EXPORT MetaEnum
@@ -86,7 +86,7 @@ public:
 
 };
 
-class MetaObject
+class HYBRIDGE_EXPORT MetaObject
 {
 public:
     virtual ~MetaObject() = default;
@@ -105,13 +105,10 @@ public:
 
     virtual MetaEnum const & enumerator(size_t index) const = 0;
 
-    class Connection
+    class HYBRIDGE_EXPORT Connection
     {
     public:
-        Connection(Object const * object = nullptr, size_t signalIndex = 0)
-            : object_(object)
-            , signalIndex_(signalIndex)
-        {}
+        Connection(Object const * object = nullptr, size_t signalIndex = 0);
         operator bool() const { return object_; }
 
         Object const * object() const { return object_; }
@@ -121,36 +118,6 @@ public:
         Object const * object_ = nullptr;
         size_t signalIndex_ = 0;
     };
-};
-
-#include <functional>
-
-class Transport;
-class Receiver;
-
-class ProxyObject
-{
-public:
-    typedef std::function<void(Value &&)> response_t;
-
-    ProxyObject(Receiver * receiver, Transport * transport, std::string const & id, Map && classinfo);
-
-protected:
-    void invokeMethod(const int methodIndex, Array &&args, response_t response);
-
-    void connectTo(const int signalIndex);
-
-    void disconnectFrom(const int signalIndex);
-
-    void setProperty(const int propertyIndex, Value &&value);
-
-private:
-    friend class Receiver;
-
-    Receiver * receiver_ = nullptr;
-    Transport * transport_ = nullptr;
-    std::string id_;
-    MetaObject * metaObj_ = nullptr;
 };
 
 #endif // OBJECT_H

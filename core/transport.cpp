@@ -49,7 +49,7 @@ Transport::~Transport()
     }
 }
 
-void Transport::attachBridge(Channel *bridge)
+void Transport::setChannel(Channel *bridge)
 {
     bridge_ = bridge;
 }

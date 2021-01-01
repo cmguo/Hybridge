@@ -4,18 +4,14 @@
 #include "debug.h"
 #include "core/transport.h"
 
-Receiver::Receiver(Channel * bridge)
-    : bridge_(bridge)
+Receiver::Receiver(Channel * channel, Transport *transport)
+    : channel_(channel)
+    , transport_(transport)
 {
 }
 
-void Receiver::handleMessage(Message &&message, Transport *transport)
+void Receiver::handleMessage(Message &&message)
 {
-    if (!contains(bridge_->transports_, transport)) {
-        warning("Refusing to handle message of unknown transport:", transport);
-        return;
-    }
-
     if (!mapContains(message, KEY_TYPE)) {
         warning("JSON message object is missing the type property: %s", message);
         return;
@@ -27,94 +23,97 @@ void Receiver::handleMessage(Message &&message, Transport *transport)
             warning("JSON message object is missing the id property: %s", message);
             return;
         }
-        response(transport, mapValue(message, KEY_ID).toString(), std::move(mapValue(message, KEY_DATA)));
+        response(mapValue(message, KEY_ID).toString(), std::move(mapValue(message, KEY_DATA)));
     }
 }
 
-void Receiver::init(Transport *transport)
+void Receiver::init(response_t response)
 {
     Message message;
     message[KEY_TYPE] = TypeInit;
-    sendMessage(message, transport, [this, transport](Value && data) {
+    sendMessage(message, [this, response](Value && data) {
         Map emptyMap;
         Map & objectInfos = data.toMap(emptyMap);
         for (auto & o : objectInfos) {
             Map & objectInfo = o.second.toMap(emptyMap);
             objectInfo[KEY_ID] = o.first;
-            unwrapObject(transport, std::move(objectInfo));
+            o.second = unwrapObject(std::move(objectInfo));
         }
+        response(std::move(data));
     });
 }
 
-void Receiver::invokeMethod(const ProxyObject *object, const int methodIndex, Array &&args, Receiver::response_t response)
+void Receiver::invokeMethod(const ProxyObject *object, size_t methodIndex, Array &&args, response_t response)
 {
     Message message;
     message[KEY_TYPE] = TypeInvokeMethod;
     message[KEY_ID] = object->id_;
-    message[KEY_METHOD] = methodIndex;
+    message[KEY_METHOD] = static_cast<int>(methodIndex);
     message[KEY_ARGS] = std::move(args);
-    sendMessage(message, object->transport_, response);
+    sendMessage(message, [this, response](Value && data) {
+        if (mapValue(data.toMap(), KEY_Object).toBool()) {
+            Map emptyMap;
+            data = unwrapObject(std::move(data.toMap(emptyMap)));
+        }
+        response(std::move(data));
+    });
 }
 
-void Receiver::connectTo(const ProxyObject *object, const int signalIndex)
+void Receiver::connectTo(const ProxyObject *object, size_t signalIndex)
 {
     Message message;
     message[KEY_TYPE] = TypeConnectToSignal;
     message[KEY_ID] = object->id_;
-    message[KEY_SIGNAL] = signalIndex;
-    object->transport_->sendMessage(message);
+    message[KEY_SIGNAL] = static_cast<int>(signalIndex);
+    transport_->sendMessage(message);
 }
 
-void Receiver::disconnectFrom(const ProxyObject *object, const int signalIndex)
+void Receiver::disconnectFrom(const ProxyObject *object, size_t signalIndex)
 {
     Message message;
     message[KEY_TYPE] = TypeDisconnectFromSignal;
     message[KEY_ID] = object->id_;
-    message[KEY_SIGNAL] = signalIndex;
-    object->transport_->sendMessage(message);
+    message[KEY_SIGNAL] = static_cast<int>(signalIndex);
+    transport_->sendMessage(message);
 }
 
-void Receiver::setProperty(ProxyObject *object, const int propertyIndex, Value &&value)
+void Receiver::setProperty(ProxyObject *object, size_t propertyIndex, Value &&value)
 {
     Message message;
     message[KEY_TYPE] = TypeDisconnectFromSignal;
     message[KEY_ID] = object->id_;
-    message[KEY_PROPERTY] = propertyIndex;
+    message[KEY_PROPERTY] = static_cast<int>(propertyIndex);
     message[KEY_VALUE] = std::move(value);
-    object->transport_->sendMessage(message);
+    transport_->sendMessage(message);
 }
 
-void Receiver::sendMessage(Message &message, Transport *transport, Receiver::response_t response)
+void Receiver::sendMessage(Message &message, Receiver::response_t response)
 {
     std::string id = stringNumber(msgId_++);
     message[KEY_ID] = id;
-    responsesTransport_[id] = transport;
     responses_[id] = response;
-    transport->sendMessage(message);
+    transport_->sendMessage(message);
 }
 
-void Receiver::response(Transport *transport, const std::string &id, Value &&result)
+void Receiver::response(const std::string &id, Value &&result)
 {
-    assert(responsesTransport_[id] == transport);
     response_t resp = responses_[id];
     responses_.erase(id);
-    responsesTransport_.erase(id);
     resp(std::move(result));
 }
 
-ProxyObject *Receiver::unwrapObject(Transport *transport, Map &&data)
+ProxyObject *Receiver::unwrapObject(Map &&data)
 {
     std::string id = data[KEY_ID].toString();
     if (id.empty()) {
         warning("");
         return nullptr;
     }
-    TransportedObjectsMap & objects = transportedObjects_[transport];
-    if (mapContains(objects, id)) {
-        return mapValue(objects, id);
+    if (mapContains(objects_, id)) {
+        return mapValue(objects_, id);
     }
-    ProxyObject * obj = new ProxyObject(this, transport, id, std::move(data));
-    objects[id] = obj;
+    ProxyObject * obj = new ProxyObject(this, id, std::move(data));
+    objects_[id] = obj;
     connectTo(obj, 0);
     return obj;
 }

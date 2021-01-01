@@ -4,6 +4,8 @@
 #include "core/object.h"
 #include "core/message.h"
 
+#include "proxyobject.h"
+
 class Channel;
 class Transport;
 
@@ -12,44 +14,43 @@ class Receiver
 public:
     typedef ProxyObject::response_t response_t;
 
-    Receiver(Channel * bridge);
+    Receiver(Channel * channel, Transport *transport);
 
 public:
     /**
      * Handle the @p message and if needed send a response to @p transport.
      */
-    void handleMessage(Message &&message, Transport *transport);
+    void handleMessage(Message &&message);
 
 protected:
-    friend class ProxyObject;
+    friend class ProxyMetaProperty;
+    friend class ProxyMetaMethod;
 
-    void init(Transport *transport);
+    void init(response_t response);
 
-    void invokeMethod(ProxyObject const *object, const int methodIndex, Array &&args, response_t response);
+    void invokeMethod(ProxyObject const *object, size_t methodIndex, Array &&args, response_t response);
 
-    void connectTo(ProxyObject const *object, const int signalIndex);
+    void connectTo(ProxyObject const *object, size_t signalIndex);
 
-    void disconnectFrom(ProxyObject const *object, const int signalIndex);
+    void disconnectFrom(ProxyObject const *object, size_t signalIndex);
 
-    void setProperty(ProxyObject *object, const int propertyIndex, Value &&value);
+    void setProperty(ProxyObject *object, size_t propertyIndex, Value &&value);
 
 protected:
-    void sendMessage(Message &message, Transport *transport, response_t response);
+    void sendMessage(Message &message, response_t response);
 
-    void response(Transport *transport, std::string const & id, Value && result);
+    void response(std::string const & id, Value && result);
 
-    ProxyObject * unwrapObject(Transport *transport, Map && data);
+    ProxyObject * unwrapObject(Map && data);
 
 private:
     friend class Channel;
-    friend class TestBridge;
 
-    Channel * bridge_;
+    Channel * channel_;
+    Transport * transport_;
     size_t msgId_ = 0;
 
-    typedef std::unordered_map<std::string, ProxyObject*> TransportedObjectsMap;
-    std::unordered_map<Transport*, TransportedObjectsMap> transportedObjects_;
-    std::unordered_map<std::string, Transport*> responsesTransport_;
+    std::unordered_map<std::string, ProxyObject*> objects_;
     std::unordered_map<std::string, response_t> responses_;
 };
 

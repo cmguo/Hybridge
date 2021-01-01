@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <functional>
 
 class Transport;
 class Publisher;
@@ -17,13 +18,20 @@ class HYBRIDGE_EXPORT Channel
 {
 public:
     explicit Channel();
+
     Channel(Channel const & o) = delete;
+
     Channel& operator=(Channel const & o) = delete;
+
     virtual ~Channel();
 
+public:
     void registerObjects(const std::unordered_map<std::string , Object*> &objects);
+
     std::unordered_map<std::string , Object*> registeredObjects() const;
+
     void registerObject(const std::string  &id, Object *object);
+
     void deregisterObject(Object *object);
 
     bool blockUpdates() const;
@@ -34,7 +42,10 @@ public:
 //    void blockUpdatesChanged(bool block);
 
 public:
-    void connectTo(Transport *transport);
+    typedef std::function<void(Value &&)> response_t;
+
+    void connectTo(Transport *transport, response_t receive);
+
     void disconnectFrom(Transport *transport);
 
 protected:
@@ -71,6 +82,7 @@ private:
 
     Publisher * publisher_;
     std::vector<Transport*> transports_;
+    std::map<Transport*, Receiver*> receivers_;
 };
 
 #endif // CHANNEL_H

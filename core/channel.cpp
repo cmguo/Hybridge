@@ -40,7 +40,10 @@
 
 #include "channel.h"
 #include "priv/publisher.h"
+#include "priv/receiver.h"
 #include "transport.h"
+#include "priv/collection.h"
+#include "priv/debug.h"
 
 #include <algorithm>
 
@@ -105,6 +108,7 @@ void Channel::init()
     using \l{qtwebchannel-javascript.html}{\c Bridge.js}.
 */
 Channel::Channel()
+    : publisher_(nullptr)
 {
     init();
 }
@@ -202,11 +206,15 @@ void Channel::setBlockUpdates(bool block)
 
     \sa Transport, Bridge::disconnectFrom()
 */
-void Channel::connectTo(Transport *transport)
+void Channel::connectTo(Transport *transport, Channel::response_t receive)
 {
     if (std::find(transports_.begin(), transports_.end(), transport) == transports_.end()) {
         transports_.emplace_back(transport);
-        transport->attachBridge(this);
+        if (receive) {
+            receivers_[transport] = new Receiver(this, transport);
+            receivers_[transport]->init(receive);
+        }
+        transport->setChannel(this);
     }
 }
 
@@ -219,7 +227,11 @@ void Channel::disconnectFrom(Transport *transport)
 {
     auto idx = std::find(transports_.begin(), transports_.end(), transport);
     if (idx != transports_.end()) {
-        transport->attachBridge(nullptr);
+        transport->setChannel(nullptr);
+        auto it = receivers_.find(transport);
+        if (it != receivers_.end())
+            delete it->second;
+        receivers_.erase(it);
         transports_.erase(idx);
         publisher_->transportRemoved(transport);
     }
@@ -227,7 +239,16 @@ void Channel::disconnectFrom(Transport *transport)
 
 void Channel::messageReceived(Message &&message, Transport *transport)
 {
-    publisher_->handleMessage(std::move(message), transport);
+    if (!mapContains(message, KEY_TYPE)) {
+        warning("JSON message object is missing the type property: %s", message);
+        return;
+    }
+    const MessageType type = toType(mapValue(message, KEY_TYPE));
+    if (type == TypeSignal || type == TypePropertyUpdate || type == TypeResponse) {
+        receivers_[transport]->handleMessage(std::move(message));
+    } else {
+        publisher_->handleMessage(std::move(message), transport);
+    }
 }
 
 void Channel::signal(const Object *object, size_t signalIndex, Array &&args)

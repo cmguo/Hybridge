@@ -32,7 +32,7 @@ inline MetaMethod const & findSignal(const MetaObject *metaObject, size_t signal
 
 void SignalHandler::connectTo(const Object *object, size_t signalIndex)
 {
-    const MetaObject *metaObject = m_receiver->bridge_->metaObject(object);
+    const MetaObject *metaObject = m_receiver->channel_->metaObject(object);
     const MetaMethod &signal = findSignal(metaObject, signalIndex);
     if (!signal.isValid()) {
         return;
@@ -46,7 +46,7 @@ void SignalHandler::connectTo(const Object *object, size_t signalIndex)
     } // otherwise not yet connected, do so now
 
     //static const int memberOffset = Object::staticMetaObject.methodCount();
-    MetaObject::Connection connection = m_receiver->bridge_->connect(object, signal.methodIndex());
+    MetaObject::Connection connection = m_receiver->channel_->connect(object, signal.methodIndex());
     if (!connection) {
         warning("SignalHandler: MetaObject::connect returned false. Unable to connect to", object, signal.name(), signal.methodSignature());
         return;
@@ -79,7 +79,7 @@ void SignalHandler::setupSignalArgumentTypes(const MetaObject *metaObject, const
 
 void SignalHandler::dispatch(const Object *object, size_t signalIdx, Array && arguments)
 {
-    const MetaObject *metaObject = m_receiver->bridge_->metaObject(object);
+    const MetaObject *metaObject = m_receiver->channel_->metaObject(object);
     assert(mapContains(m_signalArgumentTypes, metaObject));
     const std::unordered_map<size_t, std::vector<int> > &objectSignalArgumentTypes = mapValue(m_signalArgumentTypes, metaObject);
     std::unordered_map<size_t, std::vector<int> >::const_iterator signalIt = objectSignalArgumentTypes.find(signalIdx);
@@ -110,7 +110,7 @@ void SignalHandler::disconnectFrom(const Object *object, size_t signalIndex)
     ConnectionPair &connection = m_connectionsCounter[object][signalIndex];
     --connection.second;
     if (!connection.second || !connection.first) {
-        m_receiver->bridge_->disconnect(connection.first);
+        m_receiver->channel_->disconnect(connection.first);
         m_connectionsCounter[object].erase(signalIndex);
         if (m_connectionsCounter[object].empty()) {
             m_connectionsCounter.erase(object);
@@ -142,7 +142,7 @@ void SignalHandler::clear()
 {
     for (auto &connections : m_connectionsCounter) {
         for (auto &connection : connections.second) {
-            m_receiver->bridge_->disconnect(connection.second.first);
+            m_receiver->channel_->disconnect(connection.second.first);
         }
     }
     m_connectionsCounter.clear();
@@ -156,7 +156,7 @@ void SignalHandler::remove(const Object *object)
     assert(mapContains(m_connectionsCounter, object));
     const SignalConnectionHash &connections = mapValue(m_connectionsCounter, object);
     for (auto &connection : connections) {
-        m_receiver->bridge_->disconnect(connection.second.first);
+        m_receiver->channel_->disconnect(connection.second.first);
     }
     m_connectionsCounter.erase(object);
 }

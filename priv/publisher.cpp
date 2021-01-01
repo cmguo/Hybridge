@@ -7,14 +7,16 @@
 #include "core/value.h"
 #include "debug.h"
 
+#include <iostream>
+
 namespace {
 
 
-    Message createResponse(std::string const &id, Value && data)
+    Message createResponse(Value &&id, Value && data)
     {
         Message response;
         response[KEY_TYPE] = TypeResponse;
-        response[KEY_ID] = id;
+        response[KEY_ID] = std::move(id);
         response[KEY_DATA] = std::move(data);
         return response;
     }
@@ -24,11 +26,11 @@ namespace {
 }
 
 Publisher::Publisher(Channel * bridge)
-    : bridge_(bridge)
+    : channel_(bridge)
     , signalHandler_(this)
     , clientIsIdle_(false)
     , blockUpdates_(false)
-    , propertyUpdatesInitialized_(true)
+    , propertyUpdatesInitialized_(false)
 {
 }
 
@@ -42,7 +44,7 @@ void Publisher::registerObject(std::string const &id, Object *object)
     registeredObjects_[id] = object;
     registeredObjectIds_[object] = id;
     if (propertyUpdatesInitialized_) {
-        if (!bridge_->transports_.empty()) {
+        if (!channel_->transports_.empty()) {
             warning("Registered new object after initialization, existing clients won't be notified!");
             // TODO: send a message to clients that an object was added
         }
@@ -63,7 +65,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
     Array properties;
     Map qtEnums;
 
-    const MetaObject *metaObject = bridge_->metaObject(object);
+    const MetaObject *metaObject = channel_->metaObject(object);
     std::set<size_t> notifySignals;
     std::set<std::string > identifiers;
     for (size_t i = 0; i < metaObject->propertyCount(); ++i) {
@@ -93,6 +95,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         }
         propertyInfo.emplace_back(std::move(signalInfo));
         propertyInfo.emplace_back(wrapResult(prop.read(object), transport));
+        std::cout << propertyName << " " << propertyInfo.back() << std::endl;
         properties.emplace_back(std::move(propertyInfo));
     }
     for (size_t i = 0; i < metaObject->methodCount(); ++i) {
@@ -143,9 +146,9 @@ void Publisher::setClientIsIdle(bool isIdle)
     }
     clientIsIdle_ = isIdle;
     if (!isIdle) {
-        bridge_->stopTimer();
+        channel_->stopTimer();
     } else {
-        bridge_->startTimer(PROPERTY_UPDATE_INTERVAL);
+        channel_->startTimer(PROPERTY_UPDATE_INTERVAL);
     }
 }
 
@@ -206,13 +209,14 @@ void Publisher::sendPendingPropertyUpdates()
     }
 
     Array data;
+    Array data2;
     std::map<Transport*, Array> specificUpdates;
 
     // convert pending property updates to JSON data
     const PendingPropertyUpdates::const_iterator end = pendingPropertyUpdates_.cend();
     for (PendingPropertyUpdates::const_iterator it = pendingPropertyUpdates_.cbegin(); it != end; ++it) {
         const Object *object = it->first;
-        const MetaObject *const metaObject = bridge_->metaObject(object);
+        const MetaObject *const metaObject = channel_->metaObject(object);
         const std::string objectId = mapValue(registeredObjectIds_, object);
         const SignalToPropertyNameMap &objectssignalToPropertyMap_ = mapValue(signalToPropertyMap_, object);
         // maps property name to current property value
@@ -225,33 +229,33 @@ void Publisher::sendPendingPropertyUpdates()
             for (size_t propertyIndex : mapValue(objectssignalToPropertyMap_, sigIt->first)) {
                 const MetaProperty &property = metaObject->property(propertyIndex);
                 assert(property.isValid());
-                properties[stringNumber(propertyIndex)] = wrapResult(property.read(object), nullptr, objectId);
+                Value && v = wrapResult(property.read(object), nullptr, objectId);
+                properties[stringNumber(propertyIndex)] = std::move(v);
             }
-            sigs[stringNumber(sigIt->first)] = sigIt->second.ref<Array>();
+            sigs[stringNumber(sigIt->first)] = sigIt->second.ref();
         }
         Map obj;
         obj[KEY_OBJECT] = std::move(objectId);
         obj[KEY_SIGNALS] = std::move(sigs);
         obj[KEY_PROPERTIES] = std::move(properties);
         Value obj2(std::move(obj));
-        Value objref = obj2.ref<Map>();
 
         // if the object is auto registered, just send the update only to clients which know this object
         if (mapContains(wrappedObjects_, objectId)) {
             for (Transport *transport : mapValue(wrappedObjects_, objectId).transports) {
                 Array &arr = specificUpdates[transport];
-                arr.emplace_back(std::move(obj2));
-                obj2 = objref.ref<Map>();
+                arr.emplace_back(obj2.ref());
             }
+            data2.emplace_back(std::move(obj2));
         } else {
-            data.emplace_back(std::move(obj));
+            data.emplace_back(std::move(obj2));
         }
     }
     pendingPropertyUpdates_.clear();
 
     for (auto & it : pendingPropertyUpdates2_) {
         const Object *object = it.first;
-        const MetaObject *const metaObject = bridge_->metaObject(object);
+        const MetaObject *const metaObject = channel_->metaObject(object);
         const std::string objectId = mapValue(registeredObjectIds_, object);
         // maps property name to current property value
         Map properties;
@@ -259,23 +263,23 @@ void Publisher::sendPendingPropertyUpdates()
             // TODO: can we get rid of the int <-> string conversions here?
             const MetaProperty &property = metaObject->property(propertyIndex);
             assert(property.isValid());
-            properties[stringNumber(propertyIndex)] = wrapResult(property.read(object), nullptr, objectId);
+            Value && v = wrapResult(property.read(object), nullptr, objectId);
+            properties[stringNumber(propertyIndex)] = std::move(v);
         }
         Map obj;
         obj[KEY_OBJECT] = std::move(objectId);
         obj[KEY_PROPERTIES] = std::move(properties);
         Value obj2(std::move(obj));
-        Value objref = obj2.ref<Map>();
 
         // if the object is auto registered, just send the update only to clients which know this object
         if (mapContains(wrappedObjects_, objectId)) {
             for (Transport *transport : mapValue(wrappedObjects_, objectId).transports) {
                 Array &arr = specificUpdates[transport];
-                arr.emplace_back(std::move(obj2));
-                obj2 = objref.ref<Map>();
+                arr.emplace_back(obj2.ref());
             }
+            data2.emplace_back(std::move(obj2));
         } else {
-            data.emplace_back(std::move(obj));
+            data.emplace_back(std::move(obj2));
         }
     }
     pendingPropertyUpdates2_.clear();
@@ -301,7 +305,7 @@ void Publisher::sendPendingPropertyUpdates()
 
 Value Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args)
 {
-    const MetaMethod &method = bridge_->metaObject(object)->method(methodIndex);
+    const MetaMethod &method = channel_->metaObject(object)->method(methodIndex);
 
     if (std::string(method.name()) == "deleteLater") {
         // invoke `deleteLater` on wrapped Object indirectly
@@ -323,22 +327,22 @@ Value Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args)
     for (size_t i = 0; i < std::min(args.size(), method.parameterCount()); ++i) {
         args[i] = toVariant(std::move(args[i]), method.parameterType(i));
     }
-    return method.invoke(object, args);
+    return method.invoke(object, std::move(args));
 }
 
 void Publisher::setProperty(Object *object, size_t propertyIndex, Value &&value)
 {
-    MetaProperty const & property = bridge_->metaObject(object)->property(propertyIndex);
+    MetaProperty const & property = channel_->metaObject(object)->property(propertyIndex);
     if (!property.isValid()) {
         warning("Cannot set unknown property of object", propertyIndex, object);
     } else if (!property.write(object, toVariant(std::move(value), property.type()))) {
-        warning("Could not write value to property of object", value, property.name(), object);
+        warning("Could not write value %1 to property %2 of object %3", value, property.name(), object);
     }
 }
 
 void Publisher::signalEmitted(const Object *object, size_t signalIndex, Array &&arguments)
 {
-    if (!bridge_ || bridge_->transports_.empty()) {
+    if (!channel_ || channel_->transports_.empty()) {
         if (signalIndex == 0)
             objectDestroyed(object);
         return;
@@ -369,7 +373,7 @@ void Publisher::signalEmitted(const Object *object, size_t signalIndex, Array &&
     } else {
         pendingPropertyUpdates_[object][signalIndex] = std::move(arguments);
         if (clientIsIdle_ && !blockUpdates_) {
-            bridge_->startTimer(PROPERTY_UPDATE_INTERVAL);
+            channel_->startTimer(PROPERTY_UPDATE_INTERVAL);
         }
     }
 }
@@ -478,17 +482,15 @@ Value Publisher::wrapResult(Value &&result, Transport *transport,
         std::string id = mapValue(registeredObjectIds_, object);
 
         Value classInfo;
-        Value classInfoRef;
         if (id.empty()) {
             // neither registered, nor wrapped, do so now
-            id = bridge_->createUuid();
+            id = channel_->createUuid();
             // store ID before the call to classInfoForObject()
             // in case of self-contained objects it avoids
             // infinite loops
             registeredObjectIds_[object] = id;
 
             classInfo = classInfoForObject(object, transport);
-            classInfoRef = classInfo.ref<Map>();
 
             ObjectInfo oi(object, std::move(classInfo));
             if (transport) {
@@ -498,12 +500,12 @@ Value Publisher::wrapResult(Value &&result, Transport *transport,
                 oi.transports = mapValue(wrappedObjects_, parentObjectId).transports;
                 // or fallback to all transports if the parent is not wrapped
                 if (oi.transports.empty())
-                    oi.transports = bridge_->transports_;
+                    oi.transports = channel_->transports_;
             }
             wrappedObjects_.insert(std::make_pair(id, std::move(oi)));
             transportedWrappedObjects_.insert(std::make_pair(transport, id));
 
-            initializePropertyUpdates(object, classInfoRef.toMap());
+            initializePropertyUpdates(object, classInfo.toMap());
         } else if (mapContains(wrappedObjects_, id)) {
             assert(object == mapValue(wrappedObjects_, id).object);
             // check if this transport is already assigned to the object
@@ -513,13 +515,13 @@ Value Publisher::wrapResult(Value &&result, Transport *transport,
                 if (!mapContains(transportedWrappedObjects_, transport, id))
                     transportedWrappedObjects_.insert(std::make_pair(transport, id));
             }
-            classInfoRef = mapValue(wrappedObjects_, id).classinfo.ref<Map>();
+            classInfo = mapValue(wrappedObjects_, id).classinfo.ref();
         }
 
         Map objectInfo;
         objectInfo[KEY_Object] = true;
         objectInfo[KEY_ID] = id;
-        if (!classInfoRef.toMap().empty())
+        if (!classInfo.toMap().empty())
             objectInfo[KEY_DATA] = std::move(classInfo);
 
         return std::move(objectInfo);
@@ -548,23 +550,18 @@ void Publisher::deleteWrappedObject(Object *object) const
 
 void Publisher::broadcastMessage(const Message &message) const
 {
-    if (bridge_->transports_.empty()) {
+    if (channel_->transports_.empty()) {
         warning("QWebChannel is not connected to any transports, cannot send message: %s", message);
         return;
     }
 
-    for (Transport *transport : bridge_->transports_) {
+    for (Transport *transport : channel_->transports_) {
         transport->sendMessage(message);
     }
 }
 
 void Publisher::handleMessage(Message &&message, Transport *transport)
 {
-    if (!contains(bridge_->transports_, transport)) {
-        warning("Refusing to handle message of unknown transport:", transport);
-        return;
-    }
-
     if (!mapContains(message, KEY_TYPE)) {
         warning("JSON message object is missing the type property: %s", message);
         return;
@@ -578,7 +575,7 @@ void Publisher::handleMessage(Message &&message, Transport *transport)
             warning("JSON message object is missing the id property: %s", message);
             return;
         }
-        transport->sendMessage(createResponse(mapValue(message, KEY_ID).toString(), initializeClient(transport)));
+        transport->sendMessage(createResponse(std::move(mapValue(message, KEY_ID)), initializeClient(transport)));
     } else if (type == TypeDebug) {
         warning("DEBUG: ", mapValue(message, KEY_DATA));
     } else if (mapContains(message, KEY_OBJECT)) {
@@ -622,12 +619,12 @@ void Publisher::handleMessage(Message &&message, Transport *transport)
 
 void Publisher::propertyChanged(const Object *object, size_t propertyIndex)
 {
-    if (!bridge_ || bridge_->transports_.empty()) {
+    if (!channel_ || channel_->transports_.empty()) {
         return;
     }
     pendingPropertyUpdates2_[object].insert(propertyIndex);
     if (clientIsIdle_ && !blockUpdates_) {
-        bridge_->startTimer(PROPERTY_UPDATE_INTERVAL);
+        channel_->startTimer(PROPERTY_UPDATE_INTERVAL);
     }
 }
 
@@ -641,7 +638,7 @@ void Publisher::setBlockUpdates(bool block)
     if (!blockUpdates_) {
         sendPendingPropertyUpdates();
     } else {
-        bridge_->stopTimer();
+        channel_->stopTimer();
     }
 
     //blockUpdatesChanged(block);
