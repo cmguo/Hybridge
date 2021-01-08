@@ -7,6 +7,7 @@ const std::string KEY_ENUMS = ("enums");
 const std::string KEY_Object = ("__Object*__");
 const std::string KEY_ID = ("id");
 const std::string KEY_DATA = ("data");
+const std::string KEY_CLASS = ("class");
 const std::string KEY_OBJECT = ("object");
 const std::string KEY_DESTROYED = ("destroyed");
 const std::string KEY_SIGNAL = ("signal");

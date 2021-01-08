@@ -1,6 +1,7 @@
 #include "proxyobject.h"
 #include "core/message.h"
 #include "priv/receiver.h"
+#include "priv/collection.h"
 
 #include <algorithm>
 
@@ -23,22 +24,29 @@ public:
     virtual size_t enumeratorCount() const override;
     virtual const MetaEnum &enumerator(size_t index) const override;
 
+public:
+    virtual bool connect(const Connection & c) const override;
+    virtual bool disconnect(const Connection &c) const override;
+
 private:
+    Map classinfo_;
     std::vector<ProxyMetaMethod> methods_;
     std::vector<ProxyMetaProperty> properties_;
     std::vector<ProxyMetaEnum> enums_;
 };
 
-ProxyObject::ProxyObject(Receiver * receiver, std::string const & id, Map &&classinfo)
-    : receiver_(receiver)
-    , id_(id)
-    , metaObj_(new ProxyMetaObject(std::move(classinfo)))
+ProxyObject::ProxyObject() {}
+
+void ProxyObject::init(Receiver * receiver, std::string const & id, Map &&classinfo)
 {
+    receiver_ = receiver;
+    id_ = id;
+    metaObj_ = new ProxyMetaObject(std::move(classinfo));
 }
 
 const char *ProxyMetaObject::className() const
 {
-    return "ProxyObject";
+    return mapValue(classinfo_, KEY_CLASS).toString().c_str();
 }
 
 size_t ProxyMetaObject::propertyCount() const
@@ -105,8 +113,8 @@ public:
     virtual const char *methodSignature() const override { return nullptr; }
     virtual size_t parameterCount() const override;
     virtual int parameterType(size_t) const override;
-    virtual const char *parameterName(size_t) const override { return nullptr; }
-    virtual Value invoke(Object *, Array &&) const override;
+    virtual const char *parameterName(size_t) const override;
+    virtual bool invoke(Object *, Array &&, Response const &) const override;
 };
 
 const MetaMethod &ProxyMetaObject::method(size_t index) const
@@ -145,20 +153,33 @@ const MetaEnum &ProxyMetaObject::enumerator(size_t index) const
     return enums_[index];
 }
 
+bool ProxyMetaObject::connect(const Connection & c) const
+{
+    ProxyObject const * po = static_cast<ProxyObject const *>(c.object());
+    return po->receiver()->connectToSignal(c);
+}
+
+bool ProxyMetaObject::disconnect(const Connection & c) const
+{
+    ProxyObject const * po = static_cast<ProxyObject const *>(c.object());
+    return po->receiver()->disconnectFromSignal(c);
+}
+
 ProxyMetaObject::ProxyMetaObject(Map &&classinfo)
+    : classinfo_(std::move(classinfo))
 {
     Array emptyArray;
-    Array & signals = classinfo[KEY_SIGNALS].toArray(emptyArray);
+    Array & signals = classinfo_[KEY_SIGNALS].toArray(emptyArray);
     for (Value & s : signals)
         methods_.emplace_back(ProxyMetaMethod(s.toArray(emptyArray), true));
-    Array & methods = classinfo[KEY_METHODS].toArray(emptyArray);
+    Array & methods = classinfo_[KEY_METHODS].toArray(emptyArray);
     for (Value & m : methods)
         methods_.emplace_back(ProxyMetaMethod(m.toArray(emptyArray), false));
     Map emptyMap;
-    Map & enums = classinfo[KEY_ENUMS].toMap(emptyMap);
+    Map & enums = classinfo_[KEY_ENUMS].toMap(emptyMap);
     for (auto & e : enums)
         enums_.emplace_back(ProxyMetaEnum(e.first, e.second.toMap(emptyMap)));
-    Array & props = classinfo[KEY_PROPERTIES].toArray(emptyArray);
+    Array & props = classinfo_[KEY_PROPERTIES].toArray(emptyArray);
     for (Value & v : props) {
         Array & propertyInfo = v.toArray(emptyArray);
         Array & signalInfo = propertyInfo.at(2).toArray(emptyArray);
@@ -190,7 +211,7 @@ Value ProxyMetaProperty::read(const Object *) const
 bool ProxyMetaProperty::write(Object * object, Value && value) const
 {
     ProxyObject * po = static_cast<ProxyObject*>(object);
-    po->receiver_->setProperty(po, property_[0].toInt(), std::move(value));
+    po->receiver()->setProperty(po, static_cast<size_t>(property_[0].toInt()), std::move(value));
     return true;
 }
 
@@ -204,9 +225,14 @@ int ProxyMetaMethod::parameterType(size_t index) const
     return method_[2].toArray()[index].toInt();
 }
 
-Value ProxyMetaMethod::invoke(Object * object, Array && args) const
+const char *ProxyMetaMethod::parameterName(size_t index) const
+{
+    return method_[3].toArray()[index].toString().c_str();
+}
+
+bool ProxyMetaMethod::invoke(Object * object, Array && args, Response const & resp) const
 {
     ProxyObject * po = static_cast<ProxyObject*>(object);
-    po->receiver_->invokeMethod(po, methodIndex(), std::move(args), ProxyObject::response_t());
+    po->receiver()->invokeMethod(po, methodIndex(), std::move(args), resp);
     return true;
 }

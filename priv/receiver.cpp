@@ -8,6 +8,12 @@ Receiver::Receiver(Channel * channel, Transport *transport)
     : channel_(channel)
     , transport_(transport)
 {
+    transport_->setReceiver(this);
+}
+
+Receiver::~Receiver()
+{
+    transport_->setReceiver(nullptr);
 }
 
 void Receiver::handleMessage(Message &&message)
@@ -24,10 +30,25 @@ void Receiver::handleMessage(Message &&message)
             return;
         }
         response(mapValue(message, KEY_ID).toString(), std::move(mapValue(message, KEY_DATA)));
+    } else if (mapContains(message, KEY_OBJECT)) {
+        const std::string &objectName = mapValue(message, KEY_OBJECT).toString();
+        ProxyObject *object = mapValue(objects_, objectName);
+        if (!object) {
+            warning("Unknown object encountered", objectName);
+            return;
+        }
+        if (type == TypePropertyUpdate) {
+
+        } else if (type == TypeSignal) {
+            size_t signalIndex = mapValue(message, KEY_SIGNAL).toInt();
+            Array empty;
+            Array & args = mapValue(message, KEY_ARGS).toArray(empty);
+
+        }
     }
 }
 
-void Receiver::init(response_t response)
+void Receiver::init(Response const & response)
 {
     Message message;
     message[KEY_TYPE] = TypeInit;
@@ -43,11 +64,11 @@ void Receiver::init(response_t response)
     });
 }
 
-void Receiver::invokeMethod(const ProxyObject *object, size_t methodIndex, Array &&args, response_t response)
+bool Receiver::invokeMethod(ProxyObject *object, size_t methodIndex, Array &&args, Response const & response)
 {
     Message message;
     message[KEY_TYPE] = TypeInvokeMethod;
-    message[KEY_ID] = object->id_;
+    message[KEY_ID] = object->id();
     message[KEY_METHOD] = static_cast<int>(methodIndex);
     message[KEY_ARGS] = std::move(args);
     sendMessage(message, [this, response](Value && data) {
@@ -57,37 +78,41 @@ void Receiver::invokeMethod(const ProxyObject *object, size_t methodIndex, Array
         }
         response(std::move(data));
     });
+    return true;
 }
 
-void Receiver::connectTo(const ProxyObject *object, size_t signalIndex)
+bool Receiver::connectToSignal(const MetaObject::Connection &conn)
 {
     Message message;
     message[KEY_TYPE] = TypeConnectToSignal;
-    message[KEY_ID] = object->id_;
-    message[KEY_SIGNAL] = static_cast<int>(signalIndex);
+    message[KEY_ID] = static_cast<ProxyObject const *>(conn.object())->id();
+    message[KEY_SIGNAL] = static_cast<int>(conn.signalIndex());
     transport_->sendMessage(message);
+    return true;
 }
 
-void Receiver::disconnectFrom(const ProxyObject *object, size_t signalIndex)
+bool Receiver::disconnectFromSignal(const MetaObject::Connection &conn)
 {
     Message message;
     message[KEY_TYPE] = TypeDisconnectFromSignal;
-    message[KEY_ID] = object->id_;
-    message[KEY_SIGNAL] = static_cast<int>(signalIndex);
+    message[KEY_ID] = static_cast<ProxyObject const *>(conn.object())->id();
+    message[KEY_SIGNAL] = static_cast<int>(conn.signalIndex());
     transport_->sendMessage(message);
+    return true;
 }
 
-void Receiver::setProperty(ProxyObject *object, size_t propertyIndex, Value &&value)
+bool Receiver::setProperty(ProxyObject *object, size_t propertyIndex, Value &&value)
 {
     Message message;
     message[KEY_TYPE] = TypeDisconnectFromSignal;
-    message[KEY_ID] = object->id_;
+    message[KEY_ID] = object->id();
     message[KEY_PROPERTY] = static_cast<int>(propertyIndex);
     message[KEY_VALUE] = std::move(value);
     transport_->sendMessage(message);
+    return true;
 }
 
-void Receiver::sendMessage(Message &message, Receiver::response_t response)
+void Receiver::sendMessage(Message &message, Response const & response)
 {
     std::string id = stringNumber(msgId_++);
     message[KEY_ID] = id;
@@ -97,12 +122,31 @@ void Receiver::sendMessage(Message &message, Receiver::response_t response)
 
 void Receiver::response(const std::string &id, Value &&result)
 {
-    response_t resp = responses_[id];
+    Response resp = responses_[id];
     responses_.erase(id);
     resp(std::move(result));
 }
 
-ProxyObject *Receiver::unwrapObject(Map &&data)
+Array Receiver::unwrapList(Array &list)
+{
+    Array array;
+    for (Value & arg : list) {
+        array.emplace_back(unwrapResult(std::move(arg)));
+    }
+    return array;
+}
+
+Value Receiver::unwrapResult(Value &&result)
+{
+    Map empty;
+    Map & objectInfo = result.toMap(empty);
+    if (mapContains(objectInfo, KEY_Object)) {
+        return unwrapObject(std::move(objectInfo));
+    }
+    return std::move(result);
+}
+
+Object *Receiver::unwrapObject(Map &&data)
 {
     std::string id = data[KEY_ID].toString();
     if (id.empty()) {
@@ -112,8 +156,9 @@ ProxyObject *Receiver::unwrapObject(Map &&data)
     if (mapContains(objects_, id)) {
         return mapValue(objects_, id);
     }
-    ProxyObject * obj = new ProxyObject(this, id, std::move(data));
+    ProxyObject * obj = channel_->createProxyObject();
+    obj->init(this, id, std::move(data));
     objects_[id] = obj;
-    connectTo(obj, 0);
-    return obj;
+    connectToSignal(MetaObject::Connection(obj, 0));
+    return obj->handle();
 }

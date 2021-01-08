@@ -2,7 +2,7 @@
 #define PUBLISHER_H
 
 #include "core/value.h"
-#include "core/object.h"
+#include "core/meta.h"
 #include "signalhandler.h"
 #include "core/message.h"
 
@@ -81,7 +81,7 @@ public:
      * The return value of the method invocation is then serialized and a response message
      * is returned.
      */
-    Value invokeMethod(Object *const object, size_t methodIndex, Array &&args);
+    void invokeMethod(Object *const object, size_t methodIndex, Array &&args, MetaMethod::Response const & resp);
 
     /**
      * Set the value of property @p propertyIndex on @p object to @p value.
@@ -152,7 +152,7 @@ protected:
 
 private:
     friend class Channel;
-    friend class TestBridge;
+    friend class Transport;
     friend class SignalHandler;
 
     Channel * channel_;
@@ -172,8 +172,8 @@ private:
     // Map of registered objects indexed by their id.
     std::unordered_map<std::string, Object *> registeredObjects_;
 
-    // Map the registered objects to their id.
-    std::unordered_map<const Object *, std::string> registeredObjectIds_;
+    // Map objects to their id & meta.
+    std::unordered_map<const Object *, std::string> objectIds_;
 
     // Groups individually wrapped objects with their class information and the transports that have access to it.
     struct ObjectInfo
@@ -199,6 +199,8 @@ private:
     std::unordered_map<std::string, ObjectInfo> wrappedObjects_;
     // Map of transports to wrapped object ids
     std::unordered_multimap<Transport*, std::string> transportedWrappedObjects_;
+
+    std::unordered_map<const Object *, MetaObject const *> objectMetas_;
 
     // Map of objects to maps of signal indices to a set of all their property indices.
     // The last value is a set as a signal can be the notify signal of multiple properties.

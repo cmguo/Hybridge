@@ -29,6 +29,7 @@ extern const std::string KEY_ENUMS;
 extern const std::string KEY_Object; // special
 extern const std::string KEY_ID;
 extern const std::string KEY_DATA;
+extern const std::string KEY_CLASS;
 extern const std::string KEY_OBJECT;
 extern const std::string KEY_DESTROYED;
 extern const std::string KEY_SIGNAL;
@@ -40,8 +41,8 @@ extern const std::string KEY_VALUE;
 
 typedef Map Message;
 
-MessageType toType(const Value &value);
+HYBRIDGE_EXPORT MessageType toType(const Value &value);
 
-char const * stringNumber(size_t n);
+HYBRIDGE_EXPORT char const * stringNumber(size_t n);
 
 #endif // MESSAGE_H

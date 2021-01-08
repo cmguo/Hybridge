@@ -28,11 +28,11 @@ struct MyHandler
     struct Layer
     {
         State s = None;
+		std::string key;
         Value v;
     };
 
     std::vector<Layer> stack;
-    std::string key;
 
     MyHandler()
     {
@@ -44,7 +44,7 @@ struct MyHandler
         if (l.s == InArray) {
             l.v.toArray(emptyArray).emplace_back(std::move(v));
         } else if (l.s == InValue) {
-            l.v.toMap(emptyMap).insert(std::make_pair(key, std::move(v)));
+            l.v.toMap(emptyMap).insert(std::make_pair(l.key, std::move(v)));
             l.s = InObject;
         } else {
             return false;
@@ -67,7 +67,7 @@ struct MyHandler
             l.s = InObject;
             l.v = Map();
         } else if (l.s == InArray || l.s == InValue) {
-            Layer l2 = { InObject, Map() };
+            Layer l2 = { InObject, "", Map() };
             stack.emplace_back(std::move(l2));
         } else {
             return false;
@@ -77,7 +77,7 @@ struct MyHandler
     bool Key(const char* str, SizeType length, bool /*copy*/) {
         Layer & l = stack.back();
         if (l.s == InObject) {
-            key = std::string(str, length);
+            l.key = std::string(str, length);
             l.s = InValue;
             return true;
         }
@@ -103,7 +103,7 @@ struct MyHandler
             l.s = InArray;
             l.v = Array();
         } else if (l.s == InArray || l.s == InValue) {
-            Layer l2 = { InArray, Array() };
+            Layer l2 = { InArray, "", Array() };
             stack.emplace_back(std::move(l2));
         } else {
             return false;

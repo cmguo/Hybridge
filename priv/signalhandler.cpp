@@ -6,7 +6,7 @@
 #include "debug.h"
 
 SignalHandler::SignalHandler(Publisher *receiver)
-    : m_receiver(receiver)
+    : publisher_(receiver)
 {
     // we must know the arguments of a destroyed signal for the global static meta object of Object
     // otherwise, we might end up with missing m_signalArgumentTypes information in dispatch
@@ -30,9 +30,14 @@ inline MetaMethod const & findSignal(const MetaObject *metaObject, size_t signal
     return signal;
 }
 
+static void dispatchSignal(void * handler, Object const * object, size_t index, Array && args)
+{
+    reinterpret_cast<SignalHandler*>(handler)->dispatch(object, index, std::move(args));
+}
+
 void SignalHandler::connectTo(const Object *object, size_t signalIndex)
 {
-    const MetaObject *metaObject = m_receiver->channel_->metaObject(object);
+    const MetaObject *metaObject = publisher_->channel_->metaObject(object);
     const MetaMethod &signal = findSignal(metaObject, signalIndex);
     if (!signal.isValid()) {
         return;
@@ -46,8 +51,8 @@ void SignalHandler::connectTo(const Object *object, size_t signalIndex)
     } // otherwise not yet connected, do so now
 
     //static const int memberOffset = Object::staticMetaObject.methodCount();
-    MetaObject::Connection connection = m_receiver->channel_->connect(object, signal.methodIndex());
-    if (!connection) {
+    MetaObject::Connection connection(object, signal.methodIndex(), this, &dispatchSignal);
+    if (!metaObject->connect(connection)) {
         warning("SignalHandler: MetaObject::connect returned false. Unable to connect to", object, signal.name(), signal.methodSignature());
         return;
     }
@@ -67,10 +72,10 @@ void SignalHandler::setupSignalArgumentTypes(const MetaObject *metaObject, const
     args.reserve(static_cast<size_t>(signal.parameterCount()));
     for (size_t i = 0; i < signal.parameterCount(); ++i) {
         int tp = signal.parameterType(i);
-//        if (tp == QMetaType::UnknownType) {
-//            warning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
-//                    signal.parameterName(i));
-//        }
+        if (tp == Value::None) {
+            warning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
+                    signal.parameterName(i));
+        }
         args.emplace_back(tp);
     }
 
@@ -79,7 +84,7 @@ void SignalHandler::setupSignalArgumentTypes(const MetaObject *metaObject, const
 
 void SignalHandler::dispatch(const Object *object, size_t signalIdx, Array && arguments)
 {
-    const MetaObject *metaObject = m_receiver->channel_->metaObject(object);
+    const MetaObject *metaObject = publisher_->channel_->metaObject(object);
     assert(mapContains(m_signalArgumentTypes, metaObject));
     const std::unordered_map<size_t, std::vector<int> > &objectSignalArgumentTypes = mapValue(m_signalArgumentTypes, metaObject);
     std::unordered_map<size_t, std::vector<int> >::const_iterator signalIt = objectSignalArgumentTypes.find(signalIdx);
@@ -87,21 +92,7 @@ void SignalHandler::dispatch(const Object *object, size_t signalIdx, Array && ar
         // not connected to this signal, skip
         return;
     }
-//    const std::vector<int> &argumentTypes = signalIt->second;
-//    Array arguments;
-//    arguments.reserve(argumentTypes.size());
-    // TODO: basic overload resolution based on number of arguments?
-//    for (int i = 0; i < argumentTypes.size(); ++i) {
-//        const QMetaType::Type type = static_cast<QMetaType::Type>(argumentTypes.at(i));
-//        MsgValue arg;
-//        if (type == QMetaType::QVariant) {
-//            arg = *reinterpret_cast<QVariant *>(argumentData[i + 1]);
-//        } else {
-//            arg = QVariant(type, argumentData[i + 1]);
-//        }
-//        arguments.append(arg);
-//    }
-    m_receiver->signalEmitted(object, signalIdx, std::move(arguments));
+    publisher_->signalEmitted(object, signalIdx, std::move(arguments));
 }
 
 void SignalHandler::disconnectFrom(const Object *object, size_t signalIndex)
@@ -110,7 +101,8 @@ void SignalHandler::disconnectFrom(const Object *object, size_t signalIndex)
     ConnectionPair &connection = m_connectionsCounter[object][signalIndex];
     --connection.second;
     if (!connection.second || !connection.first) {
-        m_receiver->channel_->disconnect(connection.first);
+        const MetaObject *metaObject = publisher_->channel_->metaObject(object);
+        metaObject->disconnect(connection.first);
         m_connectionsCounter[object].erase(signalIndex);
         if (m_connectionsCounter[object].empty()) {
             m_connectionsCounter.erase(object);
@@ -118,31 +110,13 @@ void SignalHandler::disconnectFrom(const Object *object, size_t signalIndex)
     }
 }
 
-//int SignalHandler::qt_metacall(MetaObject::Call call, int methodId, void **args)
-//{
-//    methodId = Object::qt_metacall(call, methodId, args);
-//    if (methodId < 0)
-//        return methodId;
-
-//    if (call == MetaObject::InvokeMetaMethod) {
-//        const Object *object = sender();
-//        assert(object);
-//        assert(senderSignalIndex() == methodId);
-//        assert(m_connectionsCounter.contains(object));
-//        assert(m_connectionsCounter.value(object).contains(methodId));
-
-//        dispatch(object, methodId, args);
-
-//        return -1;
-//    }
-//    return methodId;
-//}
-
 void SignalHandler::clear()
 {
     for (auto &connections : m_connectionsCounter) {
+        const MetaObject *metaObject = publisher_->channel_->metaObject(
+                    connections.first);
         for (auto &connection : connections.second) {
-            m_receiver->channel_->disconnect(connection.second.first);
+            metaObject->disconnect(connection.second.first);
         }
     }
     m_connectionsCounter.clear();
@@ -154,9 +128,10 @@ void SignalHandler::clear()
 void SignalHandler::remove(const Object *object)
 {
     assert(mapContains(m_connectionsCounter, object));
+    const MetaObject *metaObject = publisher_->channel_->metaObject(object);
     const SignalConnectionHash &connections = mapValue(m_connectionsCounter, object);
     for (auto &connection : connections) {
-        m_receiver->channel_->disconnect(connection.second.first);
+        metaObject->disconnect(connection.second.first);
     }
     m_connectionsCounter.erase(object);
 }

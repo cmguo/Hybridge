@@ -1,10 +1,9 @@
 #ifndef RECEIVER_H
 #define RECEIVER_H
 
-#include "core/object.h"
+#include "core/meta.h"
 #include "core/message.h"
-
-#include "proxyobject.h"
+#include "core/proxyobject.h"
 
 class Channel;
 class Transport;
@@ -12,9 +11,9 @@ class Transport;
 class Receiver
 {
 public:
-    typedef ProxyObject::response_t response_t;
-
     Receiver(Channel * channel, Transport *transport);
+
+    ~Receiver();
 
 public:
     /**
@@ -25,23 +24,31 @@ public:
 protected:
     friend class ProxyMetaProperty;
     friend class ProxyMetaMethod;
+    friend class ProxyMetaObject;
 
-    void init(response_t response);
+    typedef MetaMethod::Response Response;
 
-    void invokeMethod(ProxyObject const *object, size_t methodIndex, Array &&args, response_t response);
+    void init(Response const & response);
 
-    void connectTo(ProxyObject const *object, size_t signalIndex);
+    bool invokeMethod(ProxyObject *object, size_t methodIndex, Array &&args, Response const & response);
 
-    void disconnectFrom(ProxyObject const *object, size_t signalIndex);
+    bool connectToSignal(MetaObject::Connection const & conn);
 
-    void setProperty(ProxyObject *object, size_t propertyIndex, Value &&value);
+    bool disconnectFromSignal(MetaObject::Connection const & conn);
+
+    bool setProperty(ProxyObject *object, size_t propertyIndex, Value &&value);
 
 protected:
-    void sendMessage(Message &message, response_t response);
+    void sendMessage(Message &message, Response const & response);
 
     void response(std::string const & id, Value && result);
 
-    ProxyObject * unwrapObject(Map && data);
+private:
+    Array unwrapList(Array &list);
+
+    Value unwrapResult(Value &&result);
+
+    Object * unwrapObject(Map && data);
 
 private:
     friend class Channel;
@@ -51,7 +58,8 @@ private:
     size_t msgId_ = 0;
 
     std::unordered_map<std::string, ProxyObject*> objects_;
-    std::unordered_map<std::string, response_t> responses_;
+    std::unordered_map<std::string, Response> responses_;
+    std::vector<MetaObject::Connection> connections_;
 };
 
 #endif // RECEIVER_H

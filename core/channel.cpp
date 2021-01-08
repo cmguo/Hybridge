@@ -206,7 +206,7 @@ void Channel::setBlockUpdates(bool block)
 
     \sa Transport, Bridge::disconnectFrom()
 */
-void Channel::connectTo(Transport *transport, Channel::response_t receive)
+void Channel::connectTo(Transport *transport, MetaMethod::Response receive)
 {
     if (std::find(transports_.begin(), transports_.end(), transport) == transports_.end()) {
         transports_.emplace_back(transport);
@@ -214,7 +214,7 @@ void Channel::connectTo(Transport *transport, Channel::response_t receive)
             receivers_[transport] = new Receiver(this, transport);
             receivers_[transport]->init(receive);
         }
-        transport->setChannel(this);
+        transport->setPublisher(publisher_);
     }
 }
 
@@ -227,10 +227,11 @@ void Channel::disconnectFrom(Transport *transport)
 {
     auto idx = std::find(transports_.begin(), transports_.end(), transport);
     if (idx != transports_.end()) {
-        transport->setChannel(nullptr);
+        transport->setPublisher(nullptr);
         auto it = receivers_.find(transport);
-        if (it != receivers_.end())
+        if (it != receivers_.end()) {
             delete it->second;
+        }
         receivers_.erase(it);
         transports_.erase(idx);
         publisher_->transportRemoved(transport);
@@ -249,16 +250,6 @@ void Channel::messageReceived(Message &&message, Transport *transport)
     } else {
         publisher_->handleMessage(std::move(message), transport);
     }
-}
-
-void Channel::signal(const Object *object, size_t signalIndex, Array &&args)
-{
-    publisher_->signalHandler_.dispatch(object, signalIndex, std::move(args));
-}
-
-void Channel::propertyChanged(const Object *object, size_t propertyIndex)
-{
-    publisher_->propertyChanged(object, propertyIndex);
 }
 
 void Channel::timerEvent()

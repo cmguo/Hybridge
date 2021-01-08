@@ -4,11 +4,17 @@
 #include "Hybridge_global.h"
 #include "value.h"
 
+#include <functional>
+
 typedef void Object;
+
+class Channel;
 
 class HYBRIDGE_EXPORT MetaMethod
 {
 public:
+    typedef std::function<void(Value &&)> Response;
+
     virtual ~MetaMethod() = default;
 
     virtual char const * name() const = 0;
@@ -29,7 +35,7 @@ public:
 
     virtual char const * parameterName(size_t index) const = 0;
 
-    virtual Value invoke(Object * object, Array && args) const = 0;
+    virtual bool invoke(Object * object, Array && args, Response const & resp) const = 0;
 };
 
 class HYBRIDGE_EXPORT MetaProperty
@@ -68,7 +74,7 @@ public:
     virtual size_t parameterCount() const override { return size_t(-1); }
     virtual int parameterType(size_t) const override { return -1; }
     virtual const char *parameterName(size_t) const override { return nullptr; }
-    virtual Value invoke(Object *, Array &&) const override { return Value(); }
+    virtual bool invoke(Object *, Array &&, Response const &) const override { return false; }
 };
 
 class HYBRIDGE_EXPORT MetaEnum
@@ -105,12 +111,17 @@ public:
 
     virtual MetaEnum const & enumerator(size_t index) const = 0;
 
-    class HYBRIDGE_EXPORT Connection
+public:
+    class HYBRIDGE_EXPORT Signal
     {
     public:
-        Connection(Object const * object = nullptr, size_t signalIndex = 0);
+        Signal() {}
+        Signal(Object const * object, size_t signalIndex);
         operator bool() const { return object_; }
-
+        friend bool operator==(Signal const & l, Signal const & r)
+        {
+            return l.object() == r.object() && l.signalIndex() == r.signalIndex();
+        }
         Object const * object() const { return object_; }
         size_t signalIndex() const { return signalIndex_; }
 
@@ -118,6 +129,47 @@ public:
         Object const * object_ = nullptr;
         size_t signalIndex_ = 0;
     };
+
+    class HYBRIDGE_EXPORT Slot
+    {
+    public:
+        typedef void (*Handler) (void * receiver, const Object *object, size_t signalIdx, Array && args);
+
+        Slot() {}
+        Slot(void * receiver, Handler handler);
+        friend bool operator==(Slot const & l, Slot const & r)
+        {
+            return l.handler_ == r.handler_ && l.receiver_ == r.receiver_;
+        }
+        void * receiver() const { return receiver_; }
+
+    protected:
+        void * receiver_ = nullptr;
+        Handler handler_ = nullptr;
+    };
+
+    class HYBRIDGE_EXPORT Connection : public Signal, public Slot
+    {
+    public:
+        typedef void (*Handler) (void * receiver, const Object *object, size_t signalIdx, Array && args);
+
+        Connection() {}
+        Connection(Object const * object, size_t signalIndex,
+                   void * receiver = nullptr, Handler receive = nullptr);
+        friend bool operator==(Connection const & l, Connection const & r)
+        {
+            return static_cast<Signal const &>(l) == r
+                    && static_cast<Slot const &>(l) == r;
+        }
+        void signal(Array && args) const;
+    };
+
+    virtual bool connect(Connection const & c) const = 0;
+
+    virtual bool disconnect(Connection const & c) const = 0;
+
+protected:
+    void propertyChanged(Channel * channel, Object const * object, size_t propertyIndex);
 };
 
 #endif // OBJECT_H

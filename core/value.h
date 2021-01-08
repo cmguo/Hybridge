@@ -95,7 +95,6 @@ public:
         return t_;
     }
 
-private:
     enum Type
     {
         Bool,
@@ -110,6 +109,7 @@ private:
         None
     };
 
+private:
     enum Refr
     {
         Val,
@@ -169,9 +169,9 @@ private:
     template<typename T>
     T & unref(T & dflt) const
     {
-        assert(r_ != CRef);
         if (t_ != TypeOf<T>::value)
             return dflt;
+        assert(r_ != CRef);
         return *reinterpret_cast<T*>(v_);
     }
 

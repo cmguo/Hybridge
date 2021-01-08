@@ -2,17 +2,16 @@
 #define CHANNEL_H
 
 #include "Hybridge_global.h"
-#include "object.h"
+#include "meta.h"
 #include "message.h"
 
 #include <map>
 #include <string>
 #include <vector>
-#include <functional>
 
 class Transport;
 class Publisher;
-class TestBridge;
+class ProxyObject;
 
 class HYBRIDGE_EXPORT Channel
 {
@@ -42,9 +41,7 @@ public:
 //    void blockUpdatesChanged(bool block);
 
 public:
-    typedef std::function<void(Value &&)> response_t;
-
-    void connectTo(Transport *transport, response_t receive);
+    void connectTo(Transport *transport, MetaMethod::Response receive);
 
     void disconnectFrom(Transport *transport);
 
@@ -53,9 +50,7 @@ protected:
 
     virtual std::string createUuid() const = 0;
 
-    virtual MetaObject::Connection connect(Object const * object, size_t signalIndex) = 0;
-
-    virtual bool disconnect(MetaObject::Connection const & c) = 0;
+    virtual ProxyObject * createProxyObject() const = 0;
 
     virtual void startTimer(int msec) = 0;
 
@@ -64,10 +59,6 @@ protected:
 protected:
     void messageReceived(Message &&message, Transport *transport);
 
-    void signal(Object const * object, size_t signalIndex, Array && args);
-
-    void propertyChanged(Object const * object, size_t propertyIndex);
-
     void timerEvent();
 
 private:
@@ -75,7 +66,7 @@ private:
 
 private:
     friend class Publisher;
-    friend class TestBridge;
+    friend class MetaObject;
     friend class Receiver;
     friend class Transport;
     friend class SignalHandler;

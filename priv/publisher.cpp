@@ -1,7 +1,7 @@
 #include "publisher.h"
 #include "core/channel.h"
 #include "core/transport.h"
-#include "core/object.h"
+#include "core/meta.h"
 #include "core/channel.h"
 #include "collection.h"
 #include "core/value.h"
@@ -42,7 +42,7 @@ Publisher::~Publisher()
 void Publisher::registerObject(std::string const &id, Object *object)
 {
     registeredObjects_[id] = object;
-    registeredObjectIds_[object] = id;
+    objectIds_[object] = id;
     if (propertyUpdatesInitialized_) {
         if (!channel_->transports_.empty()) {
             warning("Registered new object after initialization, existing clients won't be notified!");
@@ -116,6 +116,14 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         Array data;
         data.emplace_back(name);
         data.emplace_back(static_cast<int>(i));
+        Array paramTypes;
+        Array paramNames;
+        for (size_t j = 0; j < method.parameterCount(); ++j) {
+            paramTypes.emplace_back(method.parameterType(j));
+            paramNames.emplace_back(std::string(method.parameterName(j)));
+        }
+        data.emplace_back(std::move(paramTypes));
+        data.emplace_back(std::move(paramNames));
         if (method.isSignal()) {
             signals.emplace_back(std::move(data));
         } else if (method.isPublic()) {
@@ -130,6 +138,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         }
         qtEnums[enumerator.name()] = std::move(values);
     }
+    data[KEY_CLASS] = std::string(metaObject->className());
     data[KEY_SIGNALS] = std::move(signals);
     data[KEY_METHODS] = std::move(methods);
     data[KEY_PROPERTIES] = std::move(properties);
@@ -217,7 +226,7 @@ void Publisher::sendPendingPropertyUpdates()
     for (PendingPropertyUpdates::const_iterator it = pendingPropertyUpdates_.cbegin(); it != end; ++it) {
         const Object *object = it->first;
         const MetaObject *const metaObject = channel_->metaObject(object);
-        const std::string objectId = mapValue(registeredObjectIds_, object);
+        const std::string objectId = mapValue(objectIds_, object);
         const SignalToPropertyNameMap &objectssignalToPropertyMap_ = mapValue(signalToPropertyMap_, object);
         // maps property name to current property value
         Map properties;
@@ -256,7 +265,7 @@ void Publisher::sendPendingPropertyUpdates()
     for (auto & it : pendingPropertyUpdates2_) {
         const Object *object = it.first;
         const MetaObject *const metaObject = channel_->metaObject(object);
-        const std::string objectId = mapValue(registeredObjectIds_, object);
+        const std::string objectId = mapValue(objectIds_, object);
         // maps property name to current property value
         Map properties;
         for (size_t propertyIndex : it.second) {
@@ -303,23 +312,23 @@ void Publisher::sendPendingPropertyUpdates()
     }
 }
 
-Value Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args)
+void Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args, MetaMethod::Response const & resp)
 {
     const MetaMethod &method = channel_->metaObject(object)->method(methodIndex);
 
     if (std::string(method.name()) == "deleteLater") {
         // invoke `deleteLater` on wrapped Object indirectly
         deleteWrappedObject(object);
-        return Value();
+        return resp(Value());
     } else if (!method.isValid()) {
         warning("Cannot invoke unknown method of index on object.", methodIndex, object);
-        return Value();
+        return resp(Value());
     } else if (!method.isPublic()) {
         warning("Cannot invoke non-public method on object.", method.name(), object);
-        return Value();
+        return resp(Value());
     } else if (method.isSignal()) {
         warning("Cannot invoke signal method on object.", method.name(), object);
-        return Value();
+        return resp(Value());
     } else if (args.size() > method.parameterCount()) {
         warning("Ignoring additional arguments while invoking method on object: arguments given, but method only takes.",
                 method.name(), object, method.parameterCount());
@@ -327,7 +336,7 @@ Value Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args)
     for (size_t i = 0; i < std::min(args.size(), method.parameterCount()); ++i) {
         args[i] = toVariant(std::move(args[i]), method.parameterType(i));
     }
-    return method.invoke(object, std::move(args));
+    method.invoke(object, std::move(args), resp);
 }
 
 void Publisher::setProperty(Object *object, size_t propertyIndex, Value &&value)
@@ -349,7 +358,7 @@ void Publisher::signalEmitted(const Object *object, size_t signalIndex, Array &&
     }
     if (!mapContains(mapValue(signalToPropertyMap_, object), signalIndex)) {
         Message message;
-        const std::string &objectName = mapValue(registeredObjectIds_, object);
+        const std::string &objectName = mapValue(objectIds_, object);
         assert(!objectName.empty());
         message[KEY_OBJECT] = objectName;
         message[KEY_SIGNAL] = static_cast<int>(signalIndex);
@@ -380,7 +389,7 @@ void Publisher::signalEmitted(const Object *object, size_t signalIndex, Array &&
 
 void Publisher::objectDestroyed(const Object *object)
 {
-    const std::string &id = mapTake(registeredObjectIds_, object);
+    const std::string &id = mapTake(objectIds_, object);
     assert(!id.empty());
     bool removed = registeredObjects_.erase(id)
             || wrappedObjects_.erase(id);
@@ -479,7 +488,7 @@ Value Publisher::wrapResult(Value &&result, Transport *transport,
                                             const std::string &parentObjectId)
 {
     if (Object *object = result.toObject()) {
-        std::string id = mapValue(registeredObjectIds_, object);
+        std::string id = mapValue(objectIds_, object);
 
         Value classInfo;
         if (id.empty()) {
@@ -488,7 +497,7 @@ Value Publisher::wrapResult(Value &&result, Transport *transport,
             // store ID before the call to classInfoForObject()
             // in case of self-contained objects it avoids
             // infinite loops
-            registeredObjectIds_[object] = id;
+            objectIds_[object] = id;
 
             classInfo = classInfoForObject(object, transport);
 
@@ -541,7 +550,7 @@ Array Publisher::wrapList(Array &list, Transport *transport, const std::string &
 
 void Publisher::deleteWrappedObject(Object *object) const
 {
-    if (!mapContains(wrappedObjects_, mapValue(registeredObjectIds_, object))) {
+    if (!mapContains(wrappedObjects_, mapValue(objectIds_, object))) {
         warning("Not deleting non-wrapped object", object);
         return;
     }
@@ -599,13 +608,14 @@ void Publisher::handleMessage(Message &&message, Transport *transport)
             //QPointer<Transport> transportExists(transport);
             Value args;
             Array args2;
-            Value result =
-                invokeMethod(object,
-                             static_cast<size_t>(mapValue(message, KEY_METHOD).toInt(-1)),
-                             std::move(mapValue(message, KEY_ARGS).toArray(args2)));
-            //if (!publisherExists || !transportExists)
-            //    return;
-            transport->sendMessage(createResponse(mapValue(message, KEY_ID).toString(), wrapResult(std::move(result), transport)));
+            invokeMethod(object,
+                         static_cast<size_t>(mapValue(message, KEY_METHOD).toInt(-1)),
+                         std::move(mapValue(message, KEY_ARGS).toArray(args2)), [this, transport, &message] (Value && result) {
+                //if (!publisherExists || !transportExists)
+                //    return;
+                transport->sendMessage(createResponse(mapValue(message, KEY_ID).toString(),
+                                                      wrapResult(std::move(result), transport)));
+            });
         } else if (type == TypeConnectToSignal) {
             signalHandler_.connectTo(object, static_cast<size_t>(mapValue(message, KEY_SIGNAL).toInt(-1)));
         } else if (type == TypeDisconnectFromSignal) {

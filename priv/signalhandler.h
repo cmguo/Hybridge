@@ -1,7 +1,7 @@
 #ifndef SIGNALHANDLER_H
 #define SIGNALHANDLER_H
 
-#include "core/object.h"
+#include "core/meta.h"
 
 #include <unordered_map>
 #include <vector>
@@ -56,7 +56,7 @@ public:
 private:
     void setupSignalArgumentTypes(const MetaObject *metaObject, const MetaMethod &signal);
 
-    Publisher *m_receiver;
+    Publisher *publisher_;
 
     // maps meta object -> signalIndex -> list of arguments
     // NOTE: This data is "leaked" on disconnect until deletion of the handler, is this a problem?

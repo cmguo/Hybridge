@@ -1,5 +1,8 @@
 #include "transport.h"
 #include "channel.h"
+#include "priv/publisher.h"
+#include "priv/receiver.h"
+#include "priv/collection.h"
 
 /*!
     \class Transport
@@ -44,17 +47,27 @@ Transport::Transport()
 */
 Transport::~Transport()
 {
-    if (bridge_) {
-        bridge_->disconnectFrom(this);
+    if (publisher_) {
+        publisher_->channel_->disconnectFrom(this);
     }
 }
 
-void Transport::setChannel(Channel *bridge)
+void Transport::setPublisher(Publisher * publisher)
 {
-    bridge_ = bridge;
+    publisher_ = publisher;
+}
+
+void Transport::setReceiver(Receiver *receiver)
+{
+    receiver_ = receiver;
 }
 
 void Transport::messageReceived(Message &&message)
 {
-    bridge_->messageReceived(std::move(message), this);
+    const MessageType type = toType(mapValue(message, KEY_TYPE));
+    if (receiver_ && (type == TypeSignal || type == TypePropertyUpdate || type == TypeResponse)) {
+        receiver_->handleMessage(std::move(message));
+    } else {
+        publisher_->handleMessage(std::move(message), this);
+    }
 }
