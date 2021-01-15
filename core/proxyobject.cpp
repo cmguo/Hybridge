@@ -72,7 +72,7 @@ private:
 public:
     virtual const char *name() const override { return property_.at(1).toString().c_str(); }
     virtual bool isValid() const override { return true; }
-    virtual int type() const override { return property_[3].type(); }
+    virtual Value::Type type() const override { return static_cast<Value::Type>(property_[3].toInt()); }
     virtual bool isConstant() const override { return false; }
     virtual bool hasNotifySignal() const override { return signal_.isValid(); }
     virtual size_t notifySignalIndex() const override { return signal_.methodIndex(); }
@@ -100,6 +100,9 @@ public:
 private:
     // [0] name
     // [1] index
+    // [2] returnType
+    // [3] paramTypes
+    // [4] paramNames
     Array const & method_;
     bool isSignal_;
 
@@ -111,8 +114,9 @@ public:
     virtual bool isPublic() const override { return true; }
     virtual size_t methodIndex() const override { return static_cast<size_t>(method_.at(1).toInt()); }
     virtual const char *methodSignature() const override { return nullptr; }
+    virtual Value::Type returnType() const override;
     virtual size_t parameterCount() const override;
-    virtual int parameterType(size_t) const override;
+    virtual Value::Type parameterType(size_t) const override;
     virtual const char *parameterName(size_t) const override;
     virtual bool invoke(Object *, Array &&, Response const &) const override;
 };
@@ -215,19 +219,24 @@ bool ProxyMetaProperty::write(Object * object, Value && value) const
     return true;
 }
 
+Value::Type ProxyMetaMethod::returnType() const
+{
+    return static_cast<Value::Type>(method_[2].toInt());
+}
+
 size_t ProxyMetaMethod::parameterCount() const
 {
     return method_[2].toArray().size();
 }
 
-int ProxyMetaMethod::parameterType(size_t index) const
+Value::Type ProxyMetaMethod::parameterType(size_t index) const
 {
-    return method_[2].toArray()[index].toInt();
+    return static_cast<Value::Type>(method_[3].toArray()[index].toInt());
 }
 
 const char *ProxyMetaMethod::parameterName(size_t index) const
 {
-    return method_[3].toArray()[index].toString().c_str();
+    return method_[4].toArray()[index].toString().c_str();
 }
 
 bool ProxyMetaMethod::invoke(Object * object, Array && args, Response const & resp) const

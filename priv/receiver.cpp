@@ -40,10 +40,15 @@ void Receiver::handleMessage(Message &&message)
         if (type == TypePropertyUpdate) {
 
         } else if (type == TypeSignal) {
-            size_t signalIndex = mapValue(message, KEY_SIGNAL).toInt();
+            size_t signalIndex = static_cast<size_t>(mapValue(message, KEY_SIGNAL).toInt());
             Array empty;
             Array & args = mapValue(message, KEY_ARGS).toArray(empty);
-
+            MetaObject::Signal signal(object, signalIndex);
+            for (auto & conn : connections_) {
+                if (signal == conn) {
+                    conn.signal(std::move(args));
+                }
+            }
         }
     }
 }

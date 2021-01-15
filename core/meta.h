@@ -29,9 +29,11 @@ public:
 
     virtual char const * methodSignature() const = 0;
 
+    virtual Value::Type returnType() const = 0;
+
     virtual size_t parameterCount() const = 0;
 
-    virtual int parameterType(size_t index) const = 0;
+    virtual Value::Type parameterType(size_t index) const = 0;
 
     virtual char const * parameterName(size_t index) const = 0;
 
@@ -47,7 +49,7 @@ public:
 
     virtual bool isValid() const = 0;
 
-    virtual int type() const = 0;
+    virtual Value::Type type() const = 0;
 
     virtual bool isConstant() const = 0;
 
@@ -71,8 +73,9 @@ public:
     virtual bool isPublic() const override { return false; }
     virtual size_t methodIndex() const override { return size_t(-1); }
     virtual const char *methodSignature() const override { return nullptr; }
+    virtual Value::Type returnType() const override { return Value::None; }
     virtual size_t parameterCount() const override { return size_t(-1); }
-    virtual int parameterType(size_t) const override { return -1; }
+    virtual Value::Type parameterType(size_t) const override { return Value::None; }
     virtual const char *parameterName(size_t) const override { return nullptr; }
     virtual bool invoke(Object *, Array &&, Response const &) const override { return false; }
 };

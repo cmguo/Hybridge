@@ -36,7 +36,6 @@ Publisher::Publisher(Channel * bridge)
 
 Publisher::~Publisher()
 {
-
 }
 
 void Publisher::registerObject(std::string const &id, Object *object)
@@ -95,7 +94,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         }
         propertyInfo.emplace_back(std::move(signalInfo));
         propertyInfo.emplace_back(wrapResult(prop.read(object), transport));
-        std::cout << propertyName << " " << propertyInfo.back() << std::endl;
+        std::cout << "property: " << propertyName << " = " << propertyInfo.back() << std::endl;
         properties.emplace_back(std::move(propertyInfo));
     }
     for (size_t i = 0; i < metaObject->methodCount(); ++i) {
@@ -116,6 +115,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         Array data;
         data.emplace_back(name);
         data.emplace_back(static_cast<int>(i));
+        data.emplace_back(static_cast<int>(method.returnType()));
         Array paramTypes;
         Array paramNames;
         for (size_t j = 0; j < method.parameterCount(); ++j) {

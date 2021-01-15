@@ -27,9 +27,28 @@ typedef std::vector<Value> Array;
 class HYBRIDGE_EXPORT Value
 {
 public:
+    enum Type
+    {
+        Bool,
+        Int,
+        Long,
+        Float,
+        Double,
+        String,
+        Array_,
+        Map_,
+        Object_,
+        None
+    };
+
+public:
     Value() : v_(nullptr), t_(None), r_(CRef) {}
 
     Value(Value && o) : Value() { swap(*this, o); }
+
+    Value(Type t, void * v) : v_(v), t_(t), r_(Ref) {}
+
+    Value(Type t, void const * v) : v_(const_cast<void*>(v)), t_(t), r_(CRef) {}
 
     Value& operator=(Value && o) { swap(*this, o); return *this; }
 
@@ -38,6 +57,8 @@ public:
     DELETE_COPY(Value)
 
     Value ref() const { Value v; v.v_ = v_; v.t_ = t_; v.r_ = r_ == CRef ? CRef : Ref; return v; }
+
+    static Value adopt(Type t, void * v) { Value vl(t, v); vl.r_ = Val; return vl; }
 
 public:
     Value(bool b) : Value(std::move(b), 0) {}
@@ -95,19 +116,9 @@ public:
         return t_;
     }
 
-    enum Type
-    {
-        Bool,
-        Int,
-        Long,
-        Float,
-        Double,
-        String,
-        Array_,
-        Map_,
-        Object_,
-        None
-    };
+    void * value() { return v_; }
+
+    void const * value() const { return v_; }
 
 private:
     enum Refr
