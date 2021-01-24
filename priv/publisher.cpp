@@ -423,33 +423,7 @@ Object *Publisher::unwrapObject(const std::string &objectId) const
 Value Publisher::toVariant(Value &&value, int targetType) const
 {
     (void) targetType;
-//    if (targetType == QMetaType::MsgValue) {
-//        return QVariant::fromValue(value);
-//    } else if (targetType == QMetaType::MsgArray) {
-//        if (!value.isArray())
-//            warning() << "Cannot not convert non-array argument" << value << "to MsgArray.";
-//        return QVariant::fromValue(value.toArray());
-//    } else if (targetType == QMetaType::MsgObject) {
-//        if (!value.isObject())
-//            warning() << "Cannot not convert non-object argument" << value << "to MsgObject.";
-//        return QVariant::fromValue(value.toObject());
-//    } else if (QMetaType::typeFlags(targetType) & QMetaType::PointerToObject) {
-//        Object *unwrappedObject = unwrapObject(value.toObject()[KEY_ID].toString());
-//        if (unwrappedObject == nullptr)
-//            warning() << "Cannot not convert non-object argument" << value << "to Object*.";
-//        return QVariant::fromValue(unwrappedObject);
-//    } else if (isQFlagsType(targetType)) {
-//        int flagsValue = value.toInt();
-//        return QVariant(targetType, reinterpret_cast<const void*>(&flagsValue));
-//    }
-
-//    // this converts MsgObjects to QVariantMaps, which is not desired when
-//    // we want to get a MsgObject or MsgValue (see above)
-//    MsgValue variant = value.toVariant();
-//    if (targetType != QMetaType::QVariant && !variant.convert(targetType)) {
-//        warning() << "Could not convert argument" << value << "to target type" << QVariant::typeToName(targetType) << '.';
-//    }
-    if (targetType == 1) {
+    if (targetType == Value::Object_) {
         Object *unwrappedObject = unwrapObject(mapValue(value.toMap(), KEY_ID).toString());
         if (unwrappedObject == nullptr)
             warning("Cannot not convert non-object argument to Object*.", value);

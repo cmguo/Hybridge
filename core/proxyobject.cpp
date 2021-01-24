@@ -35,13 +35,15 @@ private:
     std::vector<ProxyMetaEnum> enums_;
 };
 
-ProxyObject::ProxyObject() {}
+ProxyObject::ProxyObject(Map &&classinfo)
+{
+    metaObj_ = new ProxyMetaObject(std::move(classinfo));
+}
 
-void ProxyObject::init(Receiver * receiver, std::string const & id, Map &&classinfo)
+void ProxyObject::init(Receiver * receiver, std::string const & id)
 {
     receiver_ = receiver;
     id_ = id;
-    metaObj_ = new ProxyMetaObject(std::move(classinfo));
 }
 
 const char *ProxyMetaObject::className() const
@@ -113,7 +115,7 @@ public:
     virtual bool isSignal() const override { return isSignal_; }
     virtual bool isPublic() const override { return true; }
     virtual size_t methodIndex() const override { return static_cast<size_t>(method_.at(1).toInt()); }
-    virtual const char *methodSignature() const override { return nullptr; }
+    virtual const char *methodSignature() const override { return ""; }
     virtual Value::Type returnType() const override;
     virtual size_t parameterCount() const override;
     virtual Value::Type parameterType(size_t) const override;

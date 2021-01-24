@@ -50,7 +50,7 @@ protected:
 
     virtual std::string createUuid() const = 0;
 
-    virtual ProxyObject * createProxyObject() const = 0;
+    virtual ProxyObject * createProxyObject(Map && meta) const = 0;
 
     virtual void startTimer(int msec) = 0;
 

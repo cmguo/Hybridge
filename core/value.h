@@ -29,6 +29,7 @@ class HYBRIDGE_EXPORT Value
 public:
     enum Type
     {
+        None,
         Bool,
         Int,
         Long,
@@ -38,7 +39,6 @@ public:
         Array_,
         Map_,
         Object_,
-        None
     };
 
 public:
@@ -49,6 +49,8 @@ public:
     Value(Type t, void * v) : v_(v), t_(t), r_(Ref) {}
 
     Value(Type t, void const * v) : v_(const_cast<void*>(v)), t_(t), r_(CRef) {}
+
+    Value(Type t, nullptr_t) : v_(nullptr), t_(t), r_(Ref) {}
 
     Value& operator=(Value && o) { swap(*this, o); return *this; }
 
@@ -82,6 +84,7 @@ public:
     double toDouble(double dft = 0) const { return unref(dft); }
 
     Value(std::string && s) : Value(std::move(s), 0) {}
+    Value(char const * s) : Value(std::string(s), 0) {}
     Value(std::string const & s) : Value(std::string(s), 0) {}
     bool isString() const { return t_ == String; }
     std::string & toString(std::string & dft) const { return unref(dft); }
@@ -111,7 +114,7 @@ public:
     static Value fromJson(std::string const & json);
     static std::string toJson(Value const & value);
 
-    int type() const
+    Type type() const
     {
         return t_;
     }
@@ -147,7 +150,7 @@ private:
     template<typename T>
     static void destroy(void * v) { delete reinterpret_cast<T*>(v); }
 
-    static constexpr void (*destroys[])(void *) = {
+    static constexpr void (*destroys[])(void *) = { nullptr,
             &destroy<bool>, &destroy<int>, &destroy<long long>,
             &destroy<float>, &destroy<double>, &destroy<std::string>,
             &destroy<Array>, &destroy<Map>, &destroy<Object*>,
@@ -173,7 +176,7 @@ private:
     Value(T const & t, int)
         : v_(const_cast<T *>(&t))
         , t_(TypeOf<T>::value)
-        , r_(Val)
+        , r_(CRef)
     {
     }
 

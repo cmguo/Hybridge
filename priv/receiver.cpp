@@ -73,7 +73,7 @@ bool Receiver::invokeMethod(ProxyObject *object, size_t methodIndex, Array &&arg
 {
     Message message;
     message[KEY_TYPE] = TypeInvokeMethod;
-    message[KEY_ID] = object->id();
+    message[KEY_OBJECT] = object->id();
     message[KEY_METHOD] = static_cast<int>(methodIndex);
     message[KEY_ARGS] = std::move(args);
     sendMessage(message, [this, response](Value && data) {
@@ -161,8 +161,8 @@ Object *Receiver::unwrapObject(Map &&data)
     if (mapContains(objects_, id)) {
         return mapValue(objects_, id);
     }
-    ProxyObject * obj = channel_->createProxyObject();
-    obj->init(this, id, std::move(data));
+    ProxyObject * obj = channel_->createProxyObject(std::move(data));
+    obj->init(this, id);
     objects_[id] = obj;
     connectToSignal(MetaObject::Connection(obj, 0));
     return obj->handle();

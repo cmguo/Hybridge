@@ -12,7 +12,7 @@ class MetaObject;
 class HYBRIDGE_EXPORT ProxyObject
 {
 public:
-    ProxyObject();
+    ProxyObject(Map && classinfo);
 
     virtual ~ProxyObject() = default;
 
@@ -27,7 +27,7 @@ public:
 private:
     Receiver * receiver() const { return receiver_; }
 
-    void init(Receiver * receiver, std::string const & id, Map && classinfo);
+    void init(Receiver * receiver, std::string const & id);
 
 private:
     friend class Receiver;
