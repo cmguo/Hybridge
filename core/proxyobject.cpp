@@ -65,16 +65,16 @@ public:
 private:
     // [0] index
     // [1] name
-    // [2] signalInfo
+    // [2] signalInfo: [name, index]
     // [3] value
     Array const & property_;
     MetaMethod const & signal_;
 
     // MetaProperty interface
 public:
-    virtual const char *name() const override { return property_.at(1).toString().c_str(); }
+    virtual const char *name() const override;
     virtual bool isValid() const override { return true; }
-    virtual Value::Type type() const override { return static_cast<Value::Type>(property_[3].toInt()); }
+    virtual Value::Type type() const override;
     virtual bool isConstant() const override { return false; }
     virtual bool hasNotifySignal() const override { return signal_.isValid(); }
     virtual size_t notifySignalIndex() const override { return signal_.methodIndex(); }
@@ -209,9 +209,19 @@ int ProxyMetaEnum::value(size_t index) const
     return it->second.toInt();
 }
 
+const char *ProxyMetaProperty::name() const
+{
+    return property_.at(1).toString().c_str();
+}
+
+Value::Type ProxyMetaProperty::type() const
+{
+    return property_[3].type();
+}
+
 Value ProxyMetaProperty::read(const Object *) const
 {
-    return Value();
+    return property_[3].ref();
 }
 
 bool ProxyMetaProperty::write(Object * object, Value && value) const
