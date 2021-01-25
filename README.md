@@ -1,5 +1,5 @@
 # Hybridge
-统一跨语言API调用方案
+统一的跨语言的对象间相互调用
 
 ## 支持语言：
 * java（android）: [HybridgeJni](https://github.com/cmguo/HybridgeJni)
