@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		71B1F90425D28FF300B9EAE2 /* metaobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71B1F90225D28FF300B9EAE2 /* metaobject.cpp */; };
 		71C30A4E25CFCF7600160126 /* publisher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3625CFCF7600160126 /* publisher.cpp */; };
 		71C30A4F25CFCF7600160126 /* signalhandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3725CFCF7600160126 /* signalhandler.cpp */; };
 		71C30A5025CFCF7600160126 /* receiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3925CFCF7600160126 /* receiver.cpp */; };
@@ -15,7 +16,6 @@
 		71C30A5325CFCF7600160126 /* transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4325CFCF7600160126 /* transport.cpp */; };
 		71C30A5425CFCF7600160126 /* channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4425CFCF7600160126 /* channel.cpp */; };
 		71C30A5525CFCF7600160126 /* value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4725CFCF7600160126 /* value.cpp */; };
-		71C30A5625CFCF7600160126 /* meta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4A25CFCF7600160126 /* meta.cpp */; };
 		71C30A5725CFCF7600160126 /* proxyobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4C25CFCF7600160126 /* proxyobject.cpp */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +32,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		71B1F90225D28FF300B9EAE2 /* metaobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metaobject.cpp; sourceTree = "<group>"; };
+		71B1F90325D28FF300B9EAE2 /* metaobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metaobject.h; sourceTree = "<group>"; };
 		71C30A2625CFCEC000160126 /* libHybridge.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHybridge.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		71C30A3325CFCF7600160126 /* hybridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hybridge.h; sourceTree = "<group>"; };
 		71C30A3525CFCF7600160126 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
@@ -54,10 +56,8 @@
 		71C30A4725CFCF7600160126 /* value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = value.cpp; sourceTree = "<group>"; };
 		71C30A4825CFCF7600160126 /* proxyobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = proxyobject.h; sourceTree = "<group>"; };
 		71C30A4925CFCF7600160126 /* core.pri */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = core.pri; sourceTree = "<group>"; };
-		71C30A4A25CFCF7600160126 /* meta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = meta.cpp; sourceTree = "<group>"; };
 		71C30A4B25CFCF7600160126 /* transport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = transport.h; sourceTree = "<group>"; };
 		71C30A4C25CFCF7600160126 /* proxyobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = proxyobject.cpp; sourceTree = "<group>"; };
-		71C30A4D25CFCF7600160126 /* meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = meta.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,16 +113,16 @@
 				71C30A4125CFCF7600160126 /* channel.h */,
 				71C30A4225CFCF7600160126 /* message.cpp */,
 				71C30A4325CFCF7600160126 /* transport.cpp */,
+				71B1F90225D28FF300B9EAE2 /* metaobject.cpp */,
+				71B1F90325D28FF300B9EAE2 /* metaobject.h */,
 				71C30A4425CFCF7600160126 /* channel.cpp */,
 				71C30A4525CFCF7600160126 /* message.h */,
 				71C30A4625CFCF7600160126 /* value.h */,
 				71C30A4725CFCF7600160126 /* value.cpp */,
 				71C30A4825CFCF7600160126 /* proxyobject.h */,
 				71C30A4925CFCF7600160126 /* core.pri */,
-				71C30A4A25CFCF7600160126 /* meta.cpp */,
 				71C30A4B25CFCF7600160126 /* transport.h */,
 				71C30A4C25CFCF7600160126 /* proxyobject.cpp */,
-				71C30A4D25CFCF7600160126 /* meta.h */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -188,10 +188,10 @@
 				71C30A5325CFCF7600160126 /* transport.cpp in Sources */,
 				71C30A5025CFCF7600160126 /* receiver.cpp in Sources */,
 				71C30A5725CFCF7600160126 /* proxyobject.cpp in Sources */,
+				71B1F90425D28FF300B9EAE2 /* metaobject.cpp in Sources */,
 				71C30A5525CFCF7600160126 /* value.cpp in Sources */,
 				71C30A5425CFCF7600160126 /* channel.cpp in Sources */,
 				71C30A5125CFCF7600160126 /* hybridge.cpp in Sources */,
-				71C30A5625CFCF7600160126 /* meta.cpp in Sources */,
 				71C30A5225CFCF7600160126 /* message.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
