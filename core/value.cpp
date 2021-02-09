@@ -55,7 +55,7 @@ struct MyHandler
     bool Null() { return Value_(Value()); }
     bool Bool(bool b) { return Value_(b); }
     bool Int(int i) { return Value_(i); }
-    bool Uint(unsigned u) { return Value_(static_cast<int>(u)); }
+    bool Uint(unsigned u) { return (u & 0x80000000) ? Uint64(u) : Value_(static_cast<int>(u)); }
     bool Int64(int64_t i) { return Value_(i); }
     bool Uint64(uint64_t u) { return Value_(static_cast<long long>(u)); }
     bool Double(double d) { return Value_(d); }
