@@ -1,7 +1,7 @@
 SOURCES += \
     $$PWD/channel.cpp \
     $$PWD/message.cpp \
-    $$PWD/meta.cpp \
+    $$PWD/metaobject.cpp \
     $$PWD/proxyobject.cpp \
     $$PWD/transport.cpp \
     $$PWD/value.cpp
@@ -9,7 +9,7 @@ SOURCES += \
 HEADERS += \
     $$PWD/channel.h \
     $$PWD/message.h \
-    $$PWD/meta.h \
+    $$PWD/metaobject.h \
     $$PWD/proxyobject.h \
     $$PWD/transport.h \
     $$PWD/value.h

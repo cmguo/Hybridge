@@ -1,7 +1,7 @@
 #include "publisher.h"
 #include "core/channel.h"
 #include "core/transport.h"
-#include "core/meta.h"
+#include "core/metaobject.h"
 #include "core/channel.h"
 #include "collection.h"
 #include "core/value.h"
@@ -71,7 +71,7 @@ Map Publisher::classInfoForObject(const Object *object, Transport *transport)
         const MetaProperty &prop = metaObject->property(i);
         Array propertyInfo;
         const std::string &propertyName = prop.name();
-        propertyInfo.emplace_back(static_cast<int>(i));
+        propertyInfo.emplace_back(static_cast<int>(prop.propertyIndex()));
         propertyInfo.emplace_back(propertyName);
         identifiers.emplace(propertyName);
         Array signalInfo;

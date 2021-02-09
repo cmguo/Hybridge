@@ -1,4 +1,4 @@
-#include "meta.h"
+#include "metaobject.h"
 #include "channel.h"
 #include "priv/publisher.h"
 

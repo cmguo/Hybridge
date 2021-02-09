@@ -2,7 +2,7 @@
 #define CHANNEL_H
 
 #include "Hybridge_global.h"
-#include "meta.h"
+#include "metaobject.h"
 #include "message.h"
 
 #include <map>

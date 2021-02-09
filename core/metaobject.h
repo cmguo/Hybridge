@@ -1,5 +1,5 @@
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef METAOBJECT_H
+#define METAOBJECT_H
 
 #include "Hybridge_global.h"
 #include "value.h"
@@ -52,6 +52,8 @@ public:
     virtual Value::Type type() const = 0;
 
     virtual bool isConstant() const = 0;
+
+    virtual size_t propertyIndex() const = 0;
 
     virtual bool hasNotifySignal() const = 0;
 
@@ -175,4 +177,4 @@ protected:
     void propertyChanged(Channel * channel, Object const * object, size_t propertyIndex);
 };
 
-#endif // OBJECT_H
+#endif // METAOBJECT_H

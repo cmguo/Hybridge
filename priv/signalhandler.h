@@ -1,7 +1,7 @@
 #ifndef SIGNALHANDLER_H
 #define SIGNALHANDLER_H
 
-#include "core/meta.h"
+#include "core/metaobject.h"
 
 #include <unordered_map>
 #include <vector>

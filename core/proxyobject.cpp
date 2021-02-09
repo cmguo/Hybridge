@@ -76,6 +76,7 @@ public:
     virtual bool isValid() const override { return true; }
     virtual Value::Type type() const override;
     virtual bool isConstant() const override { return false; }
+    virtual size_t propertyIndex() const override;
     virtual bool hasNotifySignal() const override { return signal_.isValid(); }
     virtual size_t notifySignalIndex() const override { return signal_.methodIndex(); }
     virtual const MetaMethod &notifySignal() const override { return signal_; }
@@ -217,6 +218,11 @@ const char *ProxyMetaProperty::name() const
 Value::Type ProxyMetaProperty::type() const
 {
     return property_[3].type();
+}
+
+size_t ProxyMetaProperty::propertyIndex() const
+{
+    return static_cast<size_t>(property_.at(0).toInt());
 }
 
 Value ProxyMetaProperty::read(const Object *) const

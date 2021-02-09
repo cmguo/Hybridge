@@ -2,7 +2,7 @@
 #define PUBLISHER_H
 
 #include "core/value.h"
-#include "core/meta.h"
+#include "core/metaobject.h"
 #include "signalhandler.h"
 #include "core/message.h"
 

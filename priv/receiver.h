@@ -1,7 +1,7 @@
 #ifndef RECEIVER_H
 #define RECEIVER_H
 
-#include "core/meta.h"
+#include "core/metaobject.h"
 #include "core/message.h"
 #include "core/proxyobject.h"
 
