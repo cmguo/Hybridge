@@ -1,5 +1,7 @@
 #include "message.h"
 
+#include <stdlib.h>
+
 const std::string KEY_SIGNALS = ("signals");
 const std::string KEY_METHODS = ("methods");
 const std::string KEY_PROPERTIES = ("properties");
@@ -20,7 +22,11 @@ const std::string KEY_VALUE = ("value");
 char const * stringNumber(size_t n)
 {
     static char str[16];
+#ifdef WIN32
     _itoa_s(static_cast<int>(n), str, 10);
+#else
+    sprintf(str, "%ld", n);
+#endif
     return str;
 }
 

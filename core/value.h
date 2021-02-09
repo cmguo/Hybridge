@@ -50,7 +50,7 @@ public:
 
     Value(Type t, void const * v) : v_(const_cast<void*>(v)), t_(t), r_(CRef) {}
 
-    Value(Type t, nullptr_t) : v_(nullptr), t_(t), r_(Ref) {}
+    Value(Type t, std::nullptr_t) : v_(nullptr), t_(t), r_(Ref) {}
 
     Value& operator=(Value && o) { swap(*this, o); return *this; }
 

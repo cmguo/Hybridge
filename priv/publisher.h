@@ -198,7 +198,7 @@ private:
     // Map of objects wrapped from invocation returns
     std::unordered_map<std::string, ObjectInfo> wrappedObjects_;
     // Map of transports to wrapped object ids
-    std::unordered_multimap<Transport*, std::string> transportedWrappedObjects_;
+    std::multimap<Transport*, std::string> transportedWrappedObjects_;
 
     std::unordered_map<const Object *, MetaObject const *> objectMetas_;
 

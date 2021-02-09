@@ -12,6 +12,7 @@
 class Transport;
 class Publisher;
 class ProxyObject;
+class Receiver;
 
 class HYBRIDGE_EXPORT Channel
 {

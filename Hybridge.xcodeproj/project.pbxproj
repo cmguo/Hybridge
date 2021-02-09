@@ -1,0 +1,368 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		71C30A4E25CFCF7600160126 /* publisher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3625CFCF7600160126 /* publisher.cpp */; };
+		71C30A4F25CFCF7600160126 /* signalhandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3725CFCF7600160126 /* signalhandler.cpp */; };
+		71C30A5025CFCF7600160126 /* receiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3925CFCF7600160126 /* receiver.cpp */; };
+		71C30A5125CFCF7600160126 /* hybridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A3E25CFCF7600160126 /* hybridge.cpp */; };
+		71C30A5225CFCF7600160126 /* message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4225CFCF7600160126 /* message.cpp */; };
+		71C30A5325CFCF7600160126 /* transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4325CFCF7600160126 /* transport.cpp */; };
+		71C30A5425CFCF7600160126 /* channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4425CFCF7600160126 /* channel.cpp */; };
+		71C30A5525CFCF7600160126 /* value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4725CFCF7600160126 /* value.cpp */; };
+		71C30A5625CFCF7600160126 /* meta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4A25CFCF7600160126 /* meta.cpp */; };
+		71C30A5725CFCF7600160126 /* proxyobject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 71C30A4C25CFCF7600160126 /* proxyobject.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		71C30A2425CFCEC000160126 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		71C30A2625CFCEC000160126 /* libHybridge.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libHybridge.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		71C30A3325CFCF7600160126 /* hybridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hybridge.h; sourceTree = "<group>"; };
+		71C30A3525CFCF7600160126 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
+		71C30A3625CFCF7600160126 /* publisher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = publisher.cpp; sourceTree = "<group>"; };
+		71C30A3725CFCF7600160126 /* signalhandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = signalhandler.cpp; sourceTree = "<group>"; };
+		71C30A3825CFCF7600160126 /* publisher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = publisher.h; sourceTree = "<group>"; };
+		71C30A3925CFCF7600160126 /* receiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = receiver.cpp; sourceTree = "<group>"; };
+		71C30A3A25CFCF7600160126 /* priv.pri */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = priv.pri; sourceTree = "<group>"; };
+		71C30A3B25CFCF7600160126 /* receiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = receiver.h; sourceTree = "<group>"; };
+		71C30A3C25CFCF7600160126 /* signalhandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = signalhandler.h; sourceTree = "<group>"; };
+		71C30A3D25CFCF7600160126 /* collection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = collection.h; sourceTree = "<group>"; };
+		71C30A3E25CFCF7600160126 /* hybridge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hybridge.cpp; sourceTree = "<group>"; };
+		71C30A3F25CFCF7600160126 /* Hybridge_global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hybridge_global.h; sourceTree = "<group>"; };
+		71C30A4125CFCF7600160126 /* channel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = channel.h; sourceTree = "<group>"; };
+		71C30A4225CFCF7600160126 /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = message.cpp; sourceTree = "<group>"; };
+		71C30A4325CFCF7600160126 /* transport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transport.cpp; sourceTree = "<group>"; };
+		71C30A4425CFCF7600160126 /* channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = channel.cpp; sourceTree = "<group>"; };
+		71C30A4525CFCF7600160126 /* message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = message.h; sourceTree = "<group>"; };
+		71C30A4625CFCF7600160126 /* value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = value.h; sourceTree = "<group>"; };
+		71C30A4725CFCF7600160126 /* value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = value.cpp; sourceTree = "<group>"; };
+		71C30A4825CFCF7600160126 /* proxyobject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = proxyobject.h; sourceTree = "<group>"; };
+		71C30A4925CFCF7600160126 /* core.pri */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = core.pri; sourceTree = "<group>"; };
+		71C30A4A25CFCF7600160126 /* meta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = meta.cpp; sourceTree = "<group>"; };
+		71C30A4B25CFCF7600160126 /* transport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = transport.h; sourceTree = "<group>"; };
+		71C30A4C25CFCF7600160126 /* proxyobject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = proxyobject.cpp; sourceTree = "<group>"; };
+		71C30A4D25CFCF7600160126 /* meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = meta.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		71C30A2325CFCEC000160126 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		71C30A1D25CFCEC000160126 = {
+			isa = PBXGroup;
+			children = (
+				71C30A4025CFCF7600160126 /* core */,
+				71C30A3F25CFCF7600160126 /* Hybridge_global.h */,
+				71C30A3E25CFCF7600160126 /* hybridge.cpp */,
+				71C30A3325CFCF7600160126 /* hybridge.h */,
+				71C30A3425CFCF7600160126 /* priv */,
+				71C30A2725CFCEC000160126 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		71C30A2725CFCEC000160126 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				71C30A2625CFCEC000160126 /* libHybridge.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		71C30A3425CFCF7600160126 /* priv */ = {
+			isa = PBXGroup;
+			children = (
+				71C30A3525CFCF7600160126 /* debug.h */,
+				71C30A3625CFCF7600160126 /* publisher.cpp */,
+				71C30A3725CFCF7600160126 /* signalhandler.cpp */,
+				71C30A3825CFCF7600160126 /* publisher.h */,
+				71C30A3925CFCF7600160126 /* receiver.cpp */,
+				71C30A3A25CFCF7600160126 /* priv.pri */,
+				71C30A3B25CFCF7600160126 /* receiver.h */,
+				71C30A3C25CFCF7600160126 /* signalhandler.h */,
+				71C30A3D25CFCF7600160126 /* collection.h */,
+			);
+			path = priv;
+			sourceTree = "<group>";
+		};
+		71C30A4025CFCF7600160126 /* core */ = {
+			isa = PBXGroup;
+			children = (
+				71C30A4125CFCF7600160126 /* channel.h */,
+				71C30A4225CFCF7600160126 /* message.cpp */,
+				71C30A4325CFCF7600160126 /* transport.cpp */,
+				71C30A4425CFCF7600160126 /* channel.cpp */,
+				71C30A4525CFCF7600160126 /* message.h */,
+				71C30A4625CFCF7600160126 /* value.h */,
+				71C30A4725CFCF7600160126 /* value.cpp */,
+				71C30A4825CFCF7600160126 /* proxyobject.h */,
+				71C30A4925CFCF7600160126 /* core.pri */,
+				71C30A4A25CFCF7600160126 /* meta.cpp */,
+				71C30A4B25CFCF7600160126 /* transport.h */,
+				71C30A4C25CFCF7600160126 /* proxyobject.cpp */,
+				71C30A4D25CFCF7600160126 /* meta.h */,
+			);
+			path = core;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		71C30A2525CFCEC000160126 /* Hybridge */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 71C30A2F25CFCEC000160126 /* Build configuration list for PBXNativeTarget "Hybridge" */;
+			buildPhases = (
+				71C30A2225CFCEC000160126 /* Sources */,
+				71C30A2325CFCEC000160126 /* Frameworks */,
+				71C30A2425CFCEC000160126 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Hybridge;
+			productName = Hybridge;
+			productReference = 71C30A2625CFCEC000160126 /* libHybridge.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		71C30A1E25CFCEC000160126 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1230;
+				TargetAttributes = {
+					71C30A2525CFCEC000160126 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+				};
+			};
+			buildConfigurationList = 71C30A2125CFCEC000160126 /* Build configuration list for PBXProject "Hybridge" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 71C30A1D25CFCEC000160126;
+			productRefGroup = 71C30A2725CFCEC000160126 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				71C30A2525CFCEC000160126 /* Hybridge */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		71C30A2225CFCEC000160126 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				71C30A4E25CFCF7600160126 /* publisher.cpp in Sources */,
+				71C30A4F25CFCF7600160126 /* signalhandler.cpp in Sources */,
+				71C30A5325CFCF7600160126 /* transport.cpp in Sources */,
+				71C30A5025CFCF7600160126 /* receiver.cpp in Sources */,
+				71C30A5725CFCF7600160126 /* proxyobject.cpp in Sources */,
+				71C30A5525CFCF7600160126 /* value.cpp in Sources */,
+				71C30A5425CFCF7600160126 /* channel.cpp in Sources */,
+				71C30A5125CFCF7600160126 /* hybridge.cpp in Sources */,
+				71C30A5625CFCF7600160126 /* meta.cpp in Sources */,
+				71C30A5225CFCF7600160126 /* message.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		71C30A2D25CFCEC000160126 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		71C30A2E25CFCEC000160126 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		71C30A3025CFCEC000160126 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					.,
+					../rapidjson/include,
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		71C30A3125CFCEC000160126 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					.,
+					../rapidjson/include,
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		71C30A2125CFCEC000160126 /* Build configuration list for PBXProject "Hybridge" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				71C30A2D25CFCEC000160126 /* Debug */,
+				71C30A2E25CFCEC000160126 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		71C30A2F25CFCEC000160126 /* Build configuration list for PBXNativeTarget "Hybridge" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				71C30A3025CFCEC000160126 /* Debug */,
+				71C30A3125CFCEC000160126 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 71C30A1E25CFCEC000160126 /* Project object */;
+}
