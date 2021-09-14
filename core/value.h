@@ -50,8 +50,6 @@ public:
 
     Value(Type t, void const * v) : v_(const_cast<void*>(v)), t_(t), r_(CRef) {}
 
-    Value(Type t, std::nullptr_t) : v_(nullptr), t_(t), r_(Ref) {}
-
     Value& operator=(Value && o) { swap(*this, o); return *this; }
 
     ~Value() { if (r_ == Val) destroys[t_](v_); }
@@ -65,23 +63,23 @@ public:
 public:
     Value(bool b) : Value(std::move(b), 0) {}
     bool isBool() const { return t_ == Bool; }
-    bool toBool(bool dft = false) const { return unref(dft); }
+    bool toBool(bool dft = false) const { return value(dft); }
 
     Value(int n) : Value(std::move(n), 0) {}
     bool isInt() const { return t_ == Int; }
-    int toInt(int dft = 0) const { return unref(dft); }
+    int toInt(int dft = 0) const { return value(dft); }
 
     Value(long long n) : Value(std::move(n), 0) {}
     bool isLong() const { return t_ == Long; }
-    long long toLong(long long dft = 0) const { return unref(dft); }
+    long long toLong(long long dft = 0) const { return value(dft); }
 
     Value(float d) : Value(std::move(d), 0) {}
     bool isFloat() const { return t_ == Float; }
-    float toFloat(float dft = 0) const { return unref(dft); }
+    float toFloat(float dft = 0) const { return value(dft); }
 
     Value(double d) : Value(std::move(d), 0) {}
     bool isDouble() const { return t_ == Double; }
-    double toDouble(double dft = 0) const { return unref(dft); }
+    double toDouble(double dft = 0) const { return value(dft); }
 
     Value(std::string && s) : Value(std::move(s), 0) {}
     Value(char const * s) : Value(std::string(s), 0) {}
@@ -126,9 +124,9 @@ public:
 private:
     enum Refr
     {
-        Val,
-        Ref,
-        CRef
+        Val, // Own a value instanse, delete on destory
+        Ref, // Own a mutable outer instanse
+        CRef // Own a const outer instanse
     };
 
     template<typename T>
@@ -150,10 +148,36 @@ private:
     template<typename T>
     static void destroy(void * v) { delete reinterpret_cast<T*>(v); }
 
+    template<typename T>
+    static void * null_conv(void *) { return new T(); }
+
+    template<typename F, typename T>
+    static void * conv(void * v) { return new T(static_cast<T>(*reinterpret_cast<F*>(v))); }
+
+    template<typename F>
+    static void * conv_str(void * v) { return new std::string(std::to_string(*reinterpret_cast<F*>(v))); }
+
     static constexpr void (*destroys[])(void *) = { nullptr,
-            &destroy<bool>, &destroy<int>, &destroy<long long>,
-            &destroy<float>, &destroy<double>, &destroy<std::string>,
-            &destroy<Array>, &destroy<Map>, &destroy<Object*>,
+            destroy<bool>, destroy<int>, destroy<long long>,
+            destroy<float>, destroy<double>, destroy<std::string>,
+            destroy<Array>, destroy<Map>, destroy<Object*>,
+    };
+
+#define CONVS(c) c<bool>, c<int>, c<long long>, c<float>, c<double>, \
+    c<std::string>, c<Array>, c<Map>, c<Object*>
+#define CONVS2(c, f) c<f, bool>, c<f, int>, c<f, long long>, c<f, float>, c<f, double>, conv_str<f>
+
+    static constexpr void * (*convertors[][10])(void *) = {
+        { nullptr, CONVS(null_conv) },
+        { nullptr, CONVS2(conv, bool) },
+        { nullptr, CONVS2(conv, int) },
+        { nullptr, CONVS2(conv, long long) },
+        { nullptr, CONVS2(conv, float) },
+        { nullptr, CONVS2(conv, double) },
+        { nullptr },
+        { nullptr },
+        { nullptr },
+        { nullptr },
     };
 
     template<typename T>
@@ -195,6 +219,21 @@ private:
         if (t_ != TypeOf<T>::value)
             return dflt;
         return *reinterpret_cast<T*>(v_);
+    }
+
+    template<typename T>
+    T value(T dflt) const
+    {
+        if (t_ == TypeOf<T>::value)
+            return *reinterpret_cast<T*>(v_);
+        auto conv = convertors[t_][TypeOf<T>::value];
+        if (conv) {
+            T * t = reinterpret_cast<T*>(conv(v_));
+            T tt = *t;
+            delete t;
+            return tt;
+        }
+        return dflt;
     }
 
     friend void swap(Value & l, Value & r)
