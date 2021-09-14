@@ -46,6 +46,42 @@ void ProxyObject::init(Receiver * receiver, std::string const & id)
     id_ = id;
 }
 
+const MetaProperty * ProxyObject::property(const char *name) const
+{
+    std::string sname = name;
+    for (size_t i = 0; i < metaObj_->propertyCount(); ++i) {
+        MetaProperty const & mp = metaObj_->property(i);
+        if (sname == mp.name()) {
+            return &mp;
+        }
+    }
+    return nullptr;
+}
+
+const MetaMethod *ProxyObject::method(const char *name) const
+{
+    std::string sname = name;
+    for (size_t i = 0; i < metaObj_->methodCount(); ++i) {
+        MetaMethod const & md = metaObj_->method(i);
+        if (sname == md.name()) {
+            return &md;
+        }
+    }
+    return nullptr;
+}
+
+const MetaEnum *ProxyObject::enumerator(const char *name) const
+{
+    std::string sname = name;
+    for (size_t i = 0; i < metaObj_->enumeratorCount(); ++i) {
+        MetaEnum const & me = metaObj_->enumerator(i);
+        if (sname == me.name()) {
+            return &me;
+        }
+    }
+    return nullptr;
+}
+
 const char *ProxyMetaObject::className() const
 {
     return mapValue(classinfo_, KEY_CLASS).toString().c_str();
