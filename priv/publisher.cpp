@@ -244,7 +244,7 @@ void Publisher::sendPendingPropertyUpdates()
             sigs[stringNumber(sigIt->first)] = sigIt->second.ref();
         }
         Map obj;
-        obj[KEY_OBJECT] = std::move(objectId);
+        obj[KEY_OBJECT] = objectId;
         obj[KEY_SIGNALS] = std::move(sigs);
         obj[KEY_PROPERTIES] = std::move(properties);
         Value obj2(std::move(obj));
@@ -260,7 +260,6 @@ void Publisher::sendPendingPropertyUpdates()
             data.emplace_back(std::move(obj2));
         }
     }
-    pendingPropertyUpdates_.clear();
 
     for (auto & it : pendingPropertyUpdates2_) {
         const Object *object = it.first;
@@ -276,7 +275,7 @@ void Publisher::sendPendingPropertyUpdates()
             properties[stringNumber(propertyIndex)] = std::move(v);
         }
         Map obj;
-        obj[KEY_OBJECT] = std::move(objectId);
+        obj[KEY_OBJECT] = objectId;
         obj[KEY_PROPERTIES] = std::move(properties);
         Value obj2(std::move(obj));
 
@@ -291,7 +290,6 @@ void Publisher::sendPendingPropertyUpdates()
             data.emplace_back(std::move(obj2));
         }
     }
-    pendingPropertyUpdates2_.clear();
 
     Message message;
     message[KEY_TYPE] = TypePropertyUpdate;
@@ -310,6 +308,9 @@ void Publisher::sendPendingPropertyUpdates()
         message[KEY_DATA] = std::move(it->second);
         it->first->sendMessage(message);
     }
+
+    pendingPropertyUpdates_.clear();
+    pendingPropertyUpdates2_.clear();
 }
 
 void Publisher::invokeMethod(Object * object, size_t methodIndex, Array &&args, MetaMethod::Response const & resp)
@@ -587,7 +588,7 @@ void Publisher::handleMessage(Message &&message, Transport *transport)
                          std::move(mapValue(message, KEY_ARGS).toArray(args2)), [this, transport, &message] (Value && result) {
                 //if (!publisherExists || !transportExists)
                 //    return;
-                transport->sendMessage(createResponse(mapValue(message, KEY_ID).toString(),
+                transport->sendMessage(createResponse(std::move(mapValue(message, KEY_ID)),
                                                       wrapResult(std::move(result), transport)));
             });
         } else if (type == TypeConnectToSignal) {

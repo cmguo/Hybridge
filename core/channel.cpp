@@ -231,8 +231,8 @@ void Channel::disconnectFrom(Transport *transport)
         auto it = receivers_.find(transport);
         if (it != receivers_.end()) {
             delete it->second;
+            receivers_.erase(it);
         }
-        receivers_.erase(it);
         transports_.erase(idx);
         publisher_->transportRemoved(transport);
     }
