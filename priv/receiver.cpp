@@ -88,6 +88,14 @@ bool Receiver::invokeMethod(ProxyObject *object, size_t methodIndex, Array &&arg
 
 bool Receiver::connectToSignal(const MetaObject::Connection &conn)
 {
+    if (conn.signalIndex() == 0)
+        return true;
+    auto iter = std::find(connections_.begin(), connections_.end(), conn);
+    if (iter != connections_.end())
+        return true;
+    connections_.emplace_back(conn);
+    if (connections_.size() != 1)
+        return true;
     Message message;
     message[KEY_TYPE] = TypeConnectToSignal;
     message[KEY_ID] = static_cast<ProxyObject const *>(conn.object())->id();
@@ -98,6 +106,14 @@ bool Receiver::connectToSignal(const MetaObject::Connection &conn)
 
 bool Receiver::disconnectFromSignal(const MetaObject::Connection &conn)
 {
+    if (conn.signalIndex() == 0)
+        return true;
+    auto iter = std::find(connections_.begin(), connections_.end(), conn);
+    if (iter == connections_.end())
+        return false;
+    connections_.erase(iter);
+    if (!connections_.empty())
+        return true;
     Message message;
     message[KEY_TYPE] = TypeDisconnectFromSignal;
     message[KEY_ID] = static_cast<ProxyObject const *>(conn.object())->id();
@@ -164,6 +180,21 @@ Object *Receiver::unwrapObject(Map &&data)
     ProxyObject * obj = channel_->createProxyObject(std::move(data));
     obj->init(this, id);
     objects_[id] = obj;
-    connectToSignal(MetaObject::Connection(obj, 0));
+    connectToSignal(MetaObject::Connection(obj, 0, this, [](void * receiver, const Object *object, size_t, Array &&) {
+        reinterpret_cast<Receiver*>(receiver)->onObjectDestroyed(object);
+    }));
     return obj->handle();
+}
+
+void Receiver::onObjectDestroyed(const Object *object)
+{
+    auto po = static_cast<ProxyObject const *>(object);
+    auto id = po->id();
+    if (objects_[id] == po) {
+        objects_.erase(id);
+        connections_.erase(std::remove_if(connections_.begin(), connections_.end(), [object](auto & c) {
+            return c.object() == object;
+        }), connections_.end());
+    }
+    channel_->destroyProxyObject(po);
 }

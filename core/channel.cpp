@@ -238,6 +238,11 @@ void Channel::disconnectFrom(Transport *transport)
     }
 }
 
+void Channel::destroyProxyObject(const ProxyObject *proxy) const
+{
+    delete proxy;
+}
+
 void Channel::messageReceived(Message &&message, Transport *transport)
 {
     if (!mapContains(message, KEY_TYPE)) {

@@ -53,6 +53,8 @@ protected:
 
     virtual ProxyObject * createProxyObject(Map && meta) const = 0;
 
+    virtual void destroyProxyObject(ProxyObject const * proxy) const;
+
     virtual void startTimer(int msec) = 0;
 
     virtual void stopTimer() = 0;

@@ -50,6 +50,8 @@ private:
 
     Object * unwrapObject(Map && data);
 
+    void onObjectDestroyed(Object const * object);
+
 private:
     friend class Channel;
 
