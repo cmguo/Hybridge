@@ -5,6 +5,8 @@ DEFINES += HYBRIDGE_LIBRARY
 
 CONFIG += c++17
 
+include($$(applyCommonConfig))
+
 include(../config.pri)
 
 # The following define makes your compiler emit warnings if you use
