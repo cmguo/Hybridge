@@ -29,6 +29,9 @@ public:
     virtual bool disconnect(const Connection &c) const override;
 
 private:
+    const MetaMethod &method2(size_t index) const;
+
+private:
     Map classinfo_;
     std::vector<ProxyMetaMethod> methods_;
     std::vector<ProxyMetaProperty> properties_;
@@ -162,6 +165,11 @@ public:
 
 const MetaMethod &ProxyMetaObject::method(size_t index) const
 {
+    return methods_[index];
+}
+
+const MetaMethod &ProxyMetaObject::method2(size_t index) const
+{
     static EmptyMetaMethod emptyMethod;
     for (auto & m : methods_)
         if (m.methodIndex() == index)
@@ -228,7 +236,7 @@ ProxyMetaObject::ProxyMetaObject(Map &&classinfo)
         Array & signalInfo = propertyInfo.at(2).toArray(emptyArray);
         static EmptyMetaMethod emptyMethod;
         properties_.emplace_back(ProxyMetaProperty(propertyInfo,
-                signalInfo.empty() ? emptyMethod : method(static_cast<size_t>(signalInfo.at(1).toInt()))));
+                signalInfo.empty() ? emptyMethod : method2(static_cast<size_t>(signalInfo.at(1).toInt()))));
     }
 }
 
@@ -280,7 +288,7 @@ Value::Type ProxyMetaMethod::returnType() const
 
 size_t ProxyMetaMethod::parameterCount() const
 {
-    return method_[2].toArray().size();
+    return method_[3].toArray().size();
 }
 
 Value::Type ProxyMetaMethod::parameterType(size_t index) const
