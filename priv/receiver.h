@@ -39,7 +39,7 @@ protected:
     bool setProperty(ProxyObject *object, size_t propertyIndex, Value &&value);
 
 protected:
-    void sendMessage(Message &message, Response const & response);
+    void sendMessage(Message &&message, Response const & response);
 
     void response(std::string const & id, Value && result);
 

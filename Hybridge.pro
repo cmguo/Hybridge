@@ -28,6 +28,7 @@ HEADERS += \
     hybridge.h
 
 include(core/core.pri)
+include(tool/tool.pri)
 include(priv/priv.pri)
 
 # Default rules for deployment.

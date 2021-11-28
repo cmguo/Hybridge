@@ -299,14 +299,14 @@ void Publisher::sendPendingPropertyUpdates()
         setClientIsIdle(false);
 
         message[KEY_DATA] = std::move(data);
-        broadcastMessage(message);
+        broadcastMessage(std::move(message));
     }
 
     // send every property update which is not supposed to be broadcasted
     std::map<Transport*, Array>::iterator suend = specificUpdates.end();
     for (std::map<Transport*, Array>::iterator it = specificUpdates.begin(); it != suend; ++it) {
         message[KEY_DATA] = std::move(it->second);
-        it->first->sendMessage(message);
+        it->first->sendMessage(std::move(message));
     }
 
     pendingPropertyUpdates_.clear();
@@ -371,10 +371,10 @@ void Publisher::signalEmitted(const Object *object, size_t signalIndex, Array &&
         // if the object is wrapped, just send the response to clients which know this object
         if (mapContains(wrappedObjects_, objectName)) {
             for (Transport *transport : mapValue(wrappedObjects_, objectName).transports) {
-                transport->sendMessage(message);
+                transport->sendMessage(std::move(message));
             }
         } else {
-            broadcastMessage(message);
+            broadcastMessage(std::move(message));
         }
 
         if (signalIndex == 0) {
@@ -532,7 +532,7 @@ void Publisher::deleteWrappedObject(Object *object) const
     //object->deleteLater();
 }
 
-void Publisher::broadcastMessage(const Message &message) const
+void Publisher::broadcastMessage(Message &&message) const
 {
     if (channel_->transports_.empty()) {
         warning("QWebChannel is not connected to any transports, cannot send message: %s", message);
@@ -540,7 +540,7 @@ void Publisher::broadcastMessage(const Message &message) const
     }
 
     for (Transport *transport : channel_->transports_) {
-        transport->sendMessage(message);
+        transport->sendMessage(std::move(message));
     }
 }
 

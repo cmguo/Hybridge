@@ -35,7 +35,7 @@ public:
     /**
      * Send the given message to all known transports.
      */
-    void broadcastMessage(Message const &message) const;
+    void broadcastMessage(Message &&message) const;
 
     /**
      * Serialize the QMetaObject of @p object and return it in JSON form.

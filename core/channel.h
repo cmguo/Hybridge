@@ -42,7 +42,7 @@ public:
 //    void blockUpdatesChanged(bool block);
 
 public:
-    void connectTo(Transport *transport, MetaMethod::Response receive);
+    void connectTo(Transport *transport, MetaMethod::Response receive = nullptr);
 
     void disconnectFrom(Transport *transport);
 

@@ -19,7 +19,7 @@ public:
     virtual ~Transport();
 
 public:
-    virtual void sendMessage(const Message &message) = 0;
+    virtual void sendMessage(Message &&message) = 0;
 
     void setPublisher(Publisher * publisher);
 

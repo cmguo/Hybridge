@@ -57,7 +57,7 @@ void Receiver::init(Response const & response)
 {
     Message message;
     message[KEY_TYPE] = TypeInit;
-    sendMessage(message, [this, response](Value && data) {
+    sendMessage(std::move(message), [this, response](Value && data) {
         Map emptyMap;
         Map & objectInfos = data.toMap(emptyMap);
         for (auto & o : objectInfos) {
@@ -76,7 +76,7 @@ bool Receiver::invokeMethod(ProxyObject *object, size_t methodIndex, Array &&arg
     message[KEY_OBJECT] = object->id();
     message[KEY_METHOD] = static_cast<int>(methodIndex);
     message[KEY_ARGS] = std::move(args);
-    sendMessage(message, [this, response](Value && data) {
+    sendMessage(std::move(message), [this, response](Value && data) {
         if (mapValue(data.toMap(), KEY_Object).toBool()) {
             Map emptyMap;
             data = unwrapObject(std::move(data.toMap(emptyMap)));
@@ -100,7 +100,7 @@ bool Receiver::connectToSignal(const MetaObject::Connection &conn)
     message[KEY_TYPE] = TypeConnectToSignal;
     message[KEY_ID] = static_cast<ProxyObject const *>(conn.object())->id();
     message[KEY_SIGNAL] = static_cast<int>(conn.signalIndex());
-    transport_->sendMessage(message);
+    transport_->sendMessage(std::move(message));
     return true;
 }
 
@@ -118,7 +118,7 @@ bool Receiver::disconnectFromSignal(const MetaObject::Connection &conn)
     message[KEY_TYPE] = TypeDisconnectFromSignal;
     message[KEY_ID] = static_cast<ProxyObject const *>(conn.object())->id();
     message[KEY_SIGNAL] = static_cast<int>(conn.signalIndex());
-    transport_->sendMessage(message);
+    transport_->sendMessage(std::move(message));
     return true;
 }
 
@@ -129,16 +129,16 @@ bool Receiver::setProperty(ProxyObject *object, size_t propertyIndex, Value &&va
     message[KEY_ID] = object->id();
     message[KEY_PROPERTY] = static_cast<int>(propertyIndex);
     message[KEY_VALUE] = std::move(value);
-    transport_->sendMessage(message);
+    transport_->sendMessage(std::move(message));
     return true;
 }
 
-void Receiver::sendMessage(Message &message, Response const & response)
+void Receiver::sendMessage(Message &&message, Response const & response)
 {
     std::string id = stringNumber(msgId_++);
     message[KEY_ID] = id;
     responses_[id] = response;
-    transport_->sendMessage(message);
+    transport_->sendMessage(std::move(message));
 }
 
 void Receiver::response(const std::string &id, Value &&result)
